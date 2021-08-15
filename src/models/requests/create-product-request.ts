@@ -1,18 +1,12 @@
 import {DefaultUnit, ProductUnitConversion} from "../Product";
+import {Unit} from "../Unit";
 
 export interface CreateProductRequest {
     name: string
     code: string
-    categoryId: number
-
-    unitLargeId: number
-    unitMediumId: number
-    unitSmallId: number
-
-    defaultUnit: DefaultUnit
-
-    unitLargePrice: number
-    unitMediumPrice: number
-    unitSmallPrice: number
+    categoryId: string
+    brandId: string
+    unitIds: string[]
     unitConversions: ProductUnitConversion[]
+    idempotentKey?: string
 }

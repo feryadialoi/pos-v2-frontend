@@ -1,7 +1,7 @@
 import {UserData} from "../user-data";
 
 export interface LoginResponse {
-    userId: number
+    userId: string
     user: UserData
     accessToken: string
     refreshToken: string

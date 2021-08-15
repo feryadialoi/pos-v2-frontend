@@ -1,5 +1,5 @@
 export interface DetailedWarehouse {
-    id: number
+    id: string
     name: string
     address: string
 }
