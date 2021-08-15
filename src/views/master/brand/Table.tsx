@@ -6,21 +6,23 @@ import {RootState} from "../../../redux/states/root";
 import {useHotkeys} from "react-hotkeys-hook";
 import ReactPaginate from "react-paginate";
 import DataTable from "react-data-table-component";
-import {ChevronDown} from "react-feather";
+import {Archive, ChevronDown, FileText, Trash2} from "react-feather";
 import {columns} from "./columns";
-import {categoryApiService} from "../../../apiservice/category";
-import {setCategories} from "../../../redux/actions/category";
 import {Category} from "../../../models/Category";
 import {toast} from "react-toastify";
-import SuccessToast from "../../component/SuccessToast";
+import SuccessToast, {notifySuccess} from "../../component/SuccessToast";
 import ErrorToast from "../../component/ErrorToast";
-import SidebarAddBrand from "./SidebarAddBrand";
 import {Brand} from "../../../models/Brand";
 import {brandApiService} from "../../../apiservice/brand";
 import {setBrands} from "../../../redux/actions/brand";
+import ModalAddBrand from "./ModalAddBrand";
+import ModalUpdateBrand from "./ModalUpdateBrand";
+import {Item, Menu, useContextMenu} from "react-contexify";
+import 'react-contexify/dist/ReactContexify.min.css'
+import '@styles/react/libs/context-menu/context-menu.scss'
 
 interface CustomHeaderProps {
-    toggleSidebar: any
+    toggleModal: any
     handlePerPage: any
     rowsPerPage: any
     handleFilter: any
@@ -31,7 +33,7 @@ interface CustomHeaderProps {
 // ** Table Header
 const CustomHeader = (props: CustomHeaderProps) => {
 
-    const {toggleSidebar, handlePerPage, rowsPerPage, handleFilter, searchTerm, innerRef} = props
+    const {toggleModal, handlePerPage, rowsPerPage, handleFilter, searchTerm, innerRef} = props
 
     return (
         <div className='invoice-list-table-header w-100 mr-1 ml-50 mt-2 mb-75'>
@@ -75,7 +77,7 @@ const CustomHeader = (props: CustomHeaderProps) => {
                             onChange={e => handleFilter(e.target.value)}
                         />
                     </div>
-                    <Button color='primary' onClick={toggleSidebar}>
+                    <Button color='primary' onClick={toggleModal}>
                         Tambah Merk
                     </Button>
                 </Col>
@@ -93,8 +95,13 @@ const BrandsList = () => {
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(0)
     const [rowsPerPage, setRowsPerPage] = useState(10)
-    const [sort, setSort] = useState<string | null>(null)
+    const [sort, setSort] = useState<string | null>("createdDate,asc")
     const [sidebarOpen, setSidebarOpen] = useState(false)
+
+    const [isModalAddBrandVisible, setIsModalAddBrandVisible] = useState(false)
+    const [isModalUpdateBrandVisible, setIsModalUpdateBrandVisible] = useState(false)
+
+    const [brandToUpdate, setBrandToUpdate] = useState<Brand>({id: "", name: ""})
 
     const [timer, setTimer] = useState<any>(null)
 
@@ -112,12 +119,12 @@ const BrandsList = () => {
 
 
     // ** Function to toggle sidebar
-    const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
+    const toggleModalAddBrand = () => setIsModalAddBrandVisible(!isModalAddBrandVisible)
 
-    // ** Get data on mount
-    useEffect(() => {
 
-        brandApiService.getUnits({
+    const initialLoadData = () => {
+
+        brandApiService.getBrands({
             page: 0,
             size: rowsPerPage,
             name: searchTerm,
@@ -129,6 +136,11 @@ const BrandsList = () => {
             .catch((error) => {
                 console.log(error?.response?.data)
             })
+    }
+
+    // ** Get data on mount
+    useEffect(() => {
+        initialLoadData()
     }, [])
 
 
@@ -138,7 +150,7 @@ const BrandsList = () => {
         console.log(page)
         setCurrentPage(page.selected + 1)
 
-        brandApiService.getUnits({
+        brandApiService.getBrands({
             page: page.selected,
             size: rowsPerPage,
             name: searchTerm,
@@ -159,7 +171,7 @@ const BrandsList = () => {
 
         setRowsPerPage(value)
 
-        brandApiService.getUnits({
+        brandApiService.getBrands({
             page: currentPage,
             size: value,
             name: searchTerm,
@@ -188,7 +200,7 @@ const BrandsList = () => {
 
         setSearchTerm(val)
 
-        brandApiService.getUnits({
+        brandApiService.getBrands({
             page: currentPage,
             size: currentPage * rowsPerPage,
             name: val,
@@ -235,16 +247,50 @@ const BrandsList = () => {
         }))
     }
 
-    const notifySuccess = (message?: string) => toast.success(<SuccessToast
-        message={message}/>, {hideProgressBar: true})
+    const {show} = useContextMenu({
+        id: 'menu_id'
+    })
 
-    const notifyError = (message?: string) => toast.error(<ErrorToast message={message}/>, {hideProgressBar: true})
+    const handleClick = text => {
+        notifySuccess(text)
+    }
 
 
     return (
         <Fragment>
+            <ModalAddBrand
+                isOpen={isModalAddBrandVisible}
+                modalToggle={() => setIsModalAddBrandVisible(!isModalAddBrandVisible)}
+                headerToggle={() => setIsModalAddBrandVisible(!isModalAddBrandVisible)}
+                onClick={() => setIsModalAddBrandVisible(!isModalAddBrandVisible)}
+                onClose={() => {
+                    setIsModalAddBrandVisible(false)
+                    initialLoadData()
+                }}
+            />
+
+            <ModalUpdateBrand
+                brand={brandToUpdate}
+                isOpen={isModalUpdateBrandVisible}
+                modalToggle={() => setIsModalUpdateBrandVisible(!isModalUpdateBrandVisible)}
+                headerToggle={() => setIsModalUpdateBrandVisible(!isModalUpdateBrandVisible)}
+                onClick={() => setIsModalUpdateBrandVisible(!isModalUpdateBrandVisible)}
+                onClose={() => {
+                    setIsModalUpdateBrandVisible(false)
+                    initialLoadData()
+                }}
+            />
+
             <Card>
                 <DataTable
+                    onRowClicked={(row, event) => {
+                        setBrandToUpdate({
+                            id: row.id,
+                            name: row.name
+                        })
+                        show(event)
+                    }}
+                    highlightOnHover
                     noHeader
                     pagination
                     subHeader
@@ -258,7 +304,7 @@ const BrandsList = () => {
                     subHeaderComponent={
                         <CustomHeader
                             innerRef={searchTermInputRef}
-                            toggleSidebar={toggleSidebar}
+                            toggleModal={toggleModalAddBrand}
                             handlePerPage={handlePerPage}
                             rowsPerPage={rowsPerPage}
                             searchTerm={searchTerm}
@@ -266,31 +312,26 @@ const BrandsList = () => {
                         />
                     }
                 />
+
+                <Menu id='menu_id'>
+                    <Item onClick={() => handleClick('Option 1')}>
+                        <FileText size={14} className='mr-50'/>
+                        <span className='align-middle'>Details</span></Item>
+                    <Item
+                        onClick={() => {
+                            setIsModalUpdateBrandVisible(true)
+                        }}>
+                        <Archive size={14} className='mr-50'/>
+                        <span className='align-middle'>Edit</span>
+                    </Item>
+                    <Item onClick={() => handleClick('Option 2')}>
+                        <Trash2 size={14} className='mr-50'/>
+                        <span className='align-middle'>Delete</span>
+                    </Item>
+                </Menu>
+
             </Card>
 
-            <SidebarAddBrand
-                onCreateSuccess={() => {
-                    console.log("on create success")
-                    categoryApiService.getCategories({})
-                        .then(response => {
-                            dispatch(setCategories(response.data.data))
-                        })
-                        .catch(error => {
-                            console.log(error?.response?.data)
-                        })
-                }}
-
-                closeOnError={(message) => {
-                    notifyError(message)
-                }}
-
-                closeOnSuccess={() => {
-                    notifySuccess()
-                    setSidebarOpen(false)
-                }}
-                open={sidebarOpen}
-                toggleSidebar={toggleSidebar}
-            />
         </Fragment>
     )
 }

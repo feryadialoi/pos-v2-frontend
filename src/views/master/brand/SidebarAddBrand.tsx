@@ -14,7 +14,7 @@ const SidebarAddBrand = ({open, toggleSidebar, onCreateSuccess, closeOnSuccess, 
     const onSubmit = (data) => {
         console.log(data)
 
-        brandApiService.createUnit({
+        brandApiService.createBrand({
             name: data.name
         })
             .then(response => {
