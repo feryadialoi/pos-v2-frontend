@@ -96,6 +96,7 @@
     "typescript": "^4.3.5",
     "uppy": "1.21.2",
     "use-debounced-effect": "^1.2.0",
+    "uuid": "^8.3.2",
     "webpack": "4.43.0",
     "wnumb": "1.2.0",
     "xlsx": "0.16.2",
