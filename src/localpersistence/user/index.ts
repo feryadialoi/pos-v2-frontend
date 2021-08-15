@@ -5,14 +5,14 @@ const USER_ID = "USER_ID"
 const USER_DATA = "USER_DATA"
 
 
-const setUserId = (userId: number) => {
+const setUserId = (userId: string) => {
     localStorage.setItem(USER_ID, userId.toString())
 }
 
-const getUserId = (): number | null => {
+const getUserId = (): string | null => {
     const userId = localStorage.getItem(USER_ID)
     if (userId) {
-        return +userId
+        return userId
     } else {
         return null
     }
