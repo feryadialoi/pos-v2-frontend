@@ -2,23 +2,24 @@ import {Button, Card, Col, CustomInput, Input, Label, Row} from "reactstrap";
 import {Fragment, useEffect, useRef, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {Page} from "../../../models/page";
-import {Unit} from "../../../models/Unit";
 import {RootState} from "../../../redux/states/root";
 import {useHotkeys} from "react-hotkeys-hook";
 import ReactPaginate from "react-paginate";
 import DataTable from "react-data-table-component";
-import {ChevronDown} from "react-feather";
+import {Archive, ChevronDown, FileText, Trash2} from "react-feather";
 import {columns} from "./columns";
-import SidebarAddCategory from "./SidebarAddCategory";
 import {categoryApiService} from "../../../apiservice/category";
 import {setCategories} from "../../../redux/actions/category";
 import {Category} from "../../../models/Category";
-import {toast} from "react-toastify";
-import SuccessToast from "../../component/SuccessToast";
-import ErrorToast from "../../component/ErrorToast";
+import {notifySuccess} from "../../component/SuccessToast";
+import ModalAddCategory from "./ModalAddCategory";
+import ModalUpdateCategory from "./ModalUpdateCategory";
+import {Item, Menu, useContextMenu} from "react-contexify";
+import 'react-contexify/dist/ReactContexify.min.css'
+import '@styles/react/libs/context-menu/context-menu.scss'
 
 interface CustomHeaderProps {
-    toggleSidebar: any
+    toggleModal: any
     handlePerPage: any
     rowsPerPage: any
     handleFilter: any
@@ -29,7 +30,7 @@ interface CustomHeaderProps {
 // ** Table Header
 const CustomHeader = (props: CustomHeaderProps) => {
 
-    const {toggleSidebar, handlePerPage, rowsPerPage, handleFilter, searchTerm, innerRef} = props
+    const {toggleModal, handlePerPage, rowsPerPage, handleFilter, searchTerm, innerRef} = props
 
     return (
         <div className='invoice-list-table-header w-100 mr-1 ml-50 mt-2 mb-75'>
@@ -73,7 +74,7 @@ const CustomHeader = (props: CustomHeaderProps) => {
                             onChange={e => handleFilter(e.target.value)}
                         />
                     </div>
-                    <Button color='primary' onClick={toggleSidebar}>
+                    <Button color='primary' onClick={toggleModal}>
                         Tambah Kategori
                     </Button>
                 </Col>
@@ -91,8 +92,11 @@ const CategoriesList = () => {
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(0)
     const [rowsPerPage, setRowsPerPage] = useState(10)
-    const [sort, setSort] = useState<string | null>(null)
+    const [sort, setSort] = useState<string | null>("createdDate,asc")
     const [sidebarOpen, setSidebarOpen] = useState(false)
+    const [isModalAddCategoryVisible, setIsModalAddCategoryVisible] = useState(false)
+    const [isModalUpdateCategoryVisible, setIsModalUpdateCategoryVisible] = useState(false)
+    const [categoryToUpdate, setCategoryToUpdate] = useState<Category>({id: "", name: ""})
 
     const [timer, setTimer] = useState<any>(null)
 
@@ -110,10 +114,10 @@ const CategoriesList = () => {
 
 
     // ** Function to toggle sidebar
-    const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
+    const toggleModalAddCategory = () => setIsModalAddCategoryVisible(!isModalAddCategoryVisible)
 
-    // ** Get data on mount
-    useEffect(() => {
+
+    const initialLoadData = () => {
         categoryApiService.getCategories({
             page: 0,
             size: rowsPerPage,
@@ -128,6 +132,11 @@ const CategoriesList = () => {
             .catch((error) => {
                 console.log(error?.response?.data)
             })
+    }
+
+    // ** Get data on mount
+    useEffect(() => {
+        initialLoadData()
     }, [])
 
 
@@ -240,16 +249,47 @@ const CategoriesList = () => {
         }))
     }
 
-    const notifySuccess = (message?: string) => toast.success(<SuccessToast
-        message={message}/>, {hideProgressBar: true})
+    const {show} = useContextMenu({
+        id: 'menu_id'
+    })
 
-    const notifyError = (message?: string) => toast.error(<ErrorToast message={message}/>, {hideProgressBar: true})
+    const handleClick = text => {
+        notifySuccess(text)
+    }
 
 
     return (
         <Fragment>
+            <ModalAddCategory
+                isOpen={isModalAddCategoryVisible}
+                modalToggle={() => setIsModalAddCategoryVisible(!isModalAddCategoryVisible)}
+                headerToggle={() => setIsModalAddCategoryVisible(!isModalAddCategoryVisible)}
+                onClick={() => setIsModalAddCategoryVisible(!isModalAddCategoryVisible)}
+                onClose={() => {
+                    setIsModalAddCategoryVisible(false)
+                    initialLoadData()
+                }}
+            />
+            <ModalUpdateCategory
+                category={categoryToUpdate}
+                isOpen={isModalUpdateCategoryVisible}
+                modalToggle={() => setIsModalUpdateCategoryVisible(!isModalUpdateCategoryVisible)}
+                headerToggle={() => setIsModalUpdateCategoryVisible(!isModalUpdateCategoryVisible)}
+                onClick={() => setIsModalUpdateCategoryVisible(!isModalUpdateCategoryVisible)}
+                onClose={() => {
+                    setIsModalUpdateCategoryVisible(false)
+                    initialLoadData()
+                }}/>
             <Card>
                 <DataTable
+                    onRowClicked={(row, event) => {
+                        setCategoryToUpdate({
+                            id: row.id,
+                            name: row.name
+                        })
+                        show(event)
+                    }}
+                    highlightOnHover
                     noHeader
                     pagination
                     subHeader
@@ -263,7 +303,7 @@ const CategoriesList = () => {
                     subHeaderComponent={
                         <CustomHeader
                             innerRef={searchTermInputRef}
-                            toggleSidebar={toggleSidebar}
+                            toggleModal={toggleModalAddCategory}
                             handlePerPage={handlePerPage}
                             rowsPerPage={rowsPerPage}
                             searchTerm={searchTerm}
@@ -271,31 +311,26 @@ const CategoriesList = () => {
                         />
                     }
                 />
+
+                <Menu id='menu_id'>
+                    <Item onClick={() => handleClick('Option 1')}>
+                        <FileText size={14} className='mr-50'/>
+                        <span className='align-middle'>Details</span></Item>
+                    <Item
+                        onClick={() => {
+                            setIsModalUpdateCategoryVisible(true)
+                        }}>
+                        <Archive size={14} className='mr-50'/>
+                        <span className='align-middle'>Edit</span>
+                    </Item>
+                    <Item onClick={() => handleClick('Option 2')}>
+                        <Trash2 size={14} className='mr-50'/>
+                        <span className='align-middle'>Delete</span>
+                    </Item>
+                </Menu>
+
+
             </Card>
-
-            <SidebarAddCategory
-                onCreateSuccess={() => {
-                    console.log("on create success")
-                    categoryApiService.getCategories({})
-                        .then(response => {
-                            dispatch(setCategories(response.data.data))
-                        })
-                        .catch(error => {
-                            console.log(error?.response?.data)
-                        })
-                }}
-
-                closeOnError={(message) => {
-                    notifyError(message)
-                }}
-
-                closeOnSuccess={() => {
-                    notifySuccess()
-                    setSidebarOpen(false)
-                }}
-                open={sidebarOpen}
-                toggleSidebar={toggleSidebar}
-            />
         </Fragment>
     )
 }
