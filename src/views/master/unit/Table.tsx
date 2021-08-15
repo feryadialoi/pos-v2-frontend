@@ -11,13 +11,20 @@ import {columns} from './columns'
 import {useDispatch, useSelector} from 'react-redux'
 
 // ** Third Party Components
-import Select from 'react-select'
 import ReactPaginate from 'react-paginate'
-import {Check, ChevronDown, Loader, X} from 'react-feather'
+import {Archive, Check, ChevronDown, FileText, Trash2} from 'react-feather'
 import DataTable from 'react-data-table-component'
 // @ts-ignore
 import {selectThemeColors} from '@utils'
-import {Card, CardHeader, CardTitle, CardBody, Input, Row, Col, Label, CustomInput, Button} from 'reactstrap'
+import {
+    Card,
+    Input,
+    Row,
+    Col,
+    Label,
+    CustomInput,
+    Button,
+} from 'reactstrap'
 
 // ** Styles
 import '@styles/react/libs/react-select/_react-select.scss'
@@ -27,17 +34,20 @@ import {unitApiService} from "../../../apiservice/unit";
 import {useHotkeys} from "react-hotkeys-hook";
 import {setUnits} from "../../../redux/actions/unit";
 import {RootState} from "../../../redux/states/root";
-import {Product} from "../../../models/Product";
 import {Unit} from "../../../models/Unit";
 // @ts-ignore
 import Avatar from '@components/avatar'
-import {toast} from "react-toastify";
-import SuccessToast, {notifySuccess} from "../../component/SuccessToast";
-import ErrorToast, {notifyError} from "../../component/ErrorToast";
+import {notifySuccess} from "../../component/SuccessToast";
+import {notifyError} from "../../component/ErrorToast";
+import ModalAddUnit from "./ModalAddUnit";
+import ModalUpdateUnit from "./ModalUpdateUnit";
+import {Item, Menu, useContextMenu} from "react-contexify";
+import 'react-contexify/dist/ReactContexify.min.css'
+import '@styles/react/libs/context-menu/context-menu.scss'
 
 
 interface CustomHeaderProps {
-    toggleSidebar: any
+    toggleModal: any
     handlePerPage: any
     rowsPerPage: any
     handleFilter: any
@@ -48,7 +58,7 @@ interface CustomHeaderProps {
 // ** Table Header
 const CustomHeader = (props: CustomHeaderProps) => {
 
-    const {toggleSidebar, handlePerPage, rowsPerPage, handleFilter, searchTerm, innerRef} = props
+    const {toggleModal, handlePerPage, rowsPerPage, handleFilter, searchTerm, innerRef} = props
 
     return (
         <div className='invoice-list-table-header w-100 mr-1 ml-50 mt-2 mb-75'>
@@ -92,7 +102,7 @@ const CustomHeader = (props: CustomHeaderProps) => {
                             onChange={e => handleFilter(e.target.value)}
                         />
                     </div>
-                    <Button color='primary' onClick={toggleSidebar}>
+                    <Button color='primary' onClick={toggleModal}>
                         Tambah Satuan
                     </Button>
                 </Col>
@@ -100,6 +110,18 @@ const CustomHeader = (props: CustomHeaderProps) => {
         </div>
     )
 }
+
+const ToastContent = ({text}) => (
+    <Fragment>
+        <div className='toastify-header pb-0'>
+            <div className='title-wrapper'>
+                <Avatar size='sm' color='success' icon={<Check/>}/>
+                <h6 className='toast-title'>Clicked {text}</h6>
+            </div>
+        </div>
+    </Fragment>
+)
+
 
 const UnitsList = () => {
     const searchTermInputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null)
@@ -110,8 +132,11 @@ const UnitsList = () => {
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(0)
     const [rowsPerPage, setRowsPerPage] = useState(10)
-    const [sort, setSort] = useState<string | null>(null)
+    const [sort, setSort] = useState<string | null>("createdDate,asc")
     const [sidebarOpen, setSidebarOpen] = useState(false)
+    const [isModalAddUnitVisible, setIsModalAddUnitVisible] = useState(false)
+    const [isModalUpdateUnitVisible, setIsModalUpdateUnitVisible] = useState(false)
+    const [unitToUpdate, setUnitToUpdate] = useState<Unit>({id: "", name: ""})
 
     const [timer, setTimer] = useState<any>(null)
 
@@ -129,10 +154,10 @@ const UnitsList = () => {
 
 
     // ** Function to toggle sidebar
-    const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
+    const toggleModalAddUnit = () => setIsModalAddUnitVisible(true)
 
-    // ** Get data on mount
-    useEffect(() => {
+    // ** initially load data
+    const initialLoadData = () => {
         unitApiService.getUnits({
             page: 0,
             size: rowsPerPage,
@@ -145,6 +170,11 @@ const UnitsList = () => {
             .catch((error) => {
                 console.log(error?.response?.data)
             })
+    }
+
+    // ** Get data on mount
+    useEffect(() => {
+        initialLoadData()
     }, [])
 
 
@@ -183,16 +213,6 @@ const UnitsList = () => {
                 console.log(error?.response?.data)
             })
     }
-
-    // const debounce = (job: () => void, delay: number) => {
-    //     return () => {
-    //         clearTimeout(timer)
-    //         setTimer(
-    //             setTimeout(() => job(), delay)
-    //         )
-    //     }
-    // }
-
 
     // ** Function in get data on search query change
     const handleFilter = val => {
@@ -243,10 +263,47 @@ const UnitsList = () => {
         }))
     }
 
+
+    const {show} = useContextMenu({
+        id: 'menu_id'
+    })
+
+    const handleClick = text => {
+        notifySuccess(text)
+    }
+
     return (
         <Fragment>
+            <ModalUpdateUnit
+                unit={unitToUpdate}
+                isOpen={isModalUpdateUnitVisible}
+                modalToggle={() => setIsModalUpdateUnitVisible(!isModalUpdateUnitVisible)}
+                headerToggle={() => setIsModalUpdateUnitVisible(!isModalUpdateUnitVisible)}
+                onClick={() => setIsModalUpdateUnitVisible(!isModalUpdateUnitVisible)}
+                onClose={() => {
+                    setIsModalUpdateUnitVisible(false)
+                    initialLoadData()
+                }}
+            />
+            <ModalAddUnit
+                isOpen={isModalAddUnitVisible}
+                modalToggle={() => setIsModalAddUnitVisible(!isModalAddUnitVisible)}
+                headerToggle={() => setIsModalAddUnitVisible(!isModalAddUnitVisible)}
+                onClick={() => setIsModalAddUnitVisible(!isModalAddUnitVisible)}
+                onClose={() => {
+                    setIsModalAddUnitVisible(false)
+                    initialLoadData()
+                }}
+            />
             <Card>
                 <DataTable
+                    onRowClicked={(row, event) => {
+                        setUnitToUpdate({
+                            id: row.id,
+                            name: row.name
+                        })
+                        show(event)
+                    }}
                     highlightOnHover
                     noHeader
                     pagination
@@ -255,13 +312,16 @@ const UnitsList = () => {
                     paginationServer
                     columns={columns}
                     sortIcon={<ChevronDown/>}
+                    onSort={(row) => {
+                        console.log('sort', row)
+                    }}
                     className='react-dataTable'
                     paginationComponent={CustomPagination}
                     data={dataToRender()}
                     subHeaderComponent={
                         <CustomHeader
                             innerRef={searchTermInputRef}
-                            toggleSidebar={toggleSidebar}
+                            toggleModal={toggleModalAddUnit}
                             handlePerPage={handlePerPage}
                             rowsPerPage={rowsPerPage}
                             searchTerm={searchTerm}
@@ -269,18 +329,31 @@ const UnitsList = () => {
                         />
                     }
                 />
+
+
+                <Menu id='menu_id'>
+                    <Item onClick={() => handleClick('Option 1')}>
+                        <FileText size={14} className='mr-50'/>
+                        <span className='align-middle'>Details</span></Item>
+                    <Item
+                        onClick={() => {
+                            setIsModalUpdateUnitVisible(true)
+                        }}>
+                        <Archive size={14} className='mr-50'/>
+                        <span className='align-middle'>Edit</span>
+                    </Item>
+                    <Item onClick={() => handleClick('Option 2')}>
+                        <Trash2 size={14} className='mr-50'/>
+                        <span className='align-middle'>Delete</span>
+                    </Item>
+                </Menu>
+
             </Card>
 
             <SidebarAddUnit
                 onCreateSuccess={() => {
                     console.log("on create success")
-                    unitApiService.getUnits({})
-                        .then(response => {
-                            dispatch(setUnits(response.data.data))
-                        })
-                        .catch(error => {
-                            console.log(error?.response?.data)
-                        })
+                    initialLoadData()
                 }}
                 closeOnSuccess={() => {
                     notifySuccess()
@@ -290,7 +363,7 @@ const UnitsList = () => {
                     notifyError(message)
                 }}
                 open={sidebarOpen}
-                toggleSidebar={toggleSidebar}
+                toggleSidebar={toggleModalAddUnit}
             />
         </Fragment>
     )

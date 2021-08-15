@@ -11,29 +11,49 @@ import {
     Eye,
     Delete
 } from 'react-feather'
-import {Button} from "reactstrap";
+import {Button, DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown} from "reactstrap";
 import {Unit} from "../../../models/Unit";
 import {IDataTableColumn} from "react-data-table-component";
+import {store} from "../../../redux/storeConfig/store";
+import {Link} from "react-router-dom";
 
 const renderAction = (row) => {
     return (
-        <div className="d-flex">
-            <Button color='flat-primary' size="sm">
-                <span className='text-truncate text-capitalize align-middle'>
-                    <Eye size={18} className="text-primary mr-50"/>Lihat
-                </span>
-            </Button>
-            <Button color='flat-warning bg-darken-2' size="sm">
-                <span className='text-truncate text-capitalize align-middle'>
-                    <Edit2 size={18} className="text-warning bf-darken-2 mr-50"/>Edit
-                </span>
-            </Button>
-            <Button color='flat-danger' size="sm">
-                <span className='text-truncate text-capitalize align-middle'>
-                    <Delete size={18} className="text-danger mr-50"/>Hapus
-                </span>
-            </Button>
-        </div>
+        <UncontrolledDropdown>
+            <DropdownToggle tag='div' className='btn btn-sm'>
+                <MoreVertical size={14} className='cursor-pointer'/>
+            </DropdownToggle>
+            <DropdownMenu right>
+                <DropdownItem
+                    tag={Link}
+                    to={`/apps/user/view/${row.id}`}
+                    className='w-100'
+                    onClick={() => {
+                    }}
+                >
+                    <FileText size={14} className='mr-50'/>
+                    <span className='align-middle'>Details</span>
+                </DropdownItem>
+                <DropdownItem
+                    tag={Link}
+                    to={`/apps/user/edit/${row.id}`}
+                    className='w-100'
+                    onClick={() => {
+                    }}
+                >
+                    <Archive size={14} className='mr-50'/>
+                    <span className='align-middle'>Edit</span>
+                </DropdownItem>
+                <DropdownItem className='w-100'
+                              onClick={() => {
+                              }}
+                >
+                    <Trash2 size={14} className='mr-50'/>
+                    <span className='align-middle'>Delete</span>
+                </DropdownItem>
+            </DropdownMenu>
+        </UncontrolledDropdown>
+
     )
 }
 
@@ -49,7 +69,7 @@ export const columns: IDataTableColumn<Unit & { no: any }>[] = [
     {
         name: 'Nama',
         minWidth: '320px',
-        selector: 'email',
+        selector: 'name',
         sortable: true,
         cell: row => row.name
     },
