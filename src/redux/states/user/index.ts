@@ -1,6 +1,6 @@
 import {UserData} from "../../../models/user-data";
 
 export interface UserState {
-    userId: number | null
+    userId: string | null
     userData: UserData | null
 }

@@ -4,7 +4,7 @@ import {userLocalPersistence} from "../../../localpersistence/user";
 
 interface SetUserId {
     type: typeof SET_USER_ID
-    payload: number
+    payload: string
 }
 
 interface SetUserData {
@@ -14,7 +14,7 @@ interface SetUserData {
 
 export type UserActionTypes = SetUserId | SetUserData
 
-export const setUserId = (payload: number): UserActionTypes => {
+export const setUserId = (payload: string): UserActionTypes => {
 
     userLocalPersistence.setUserId(payload)
 
