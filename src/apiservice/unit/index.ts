@@ -14,49 +14,42 @@ interface GetUnitsParams extends PageableRequest {
 }
 
 const getUnits = (params: GetUnitsParams) => {
-
-    console.log('params', params)
-    return httpClient
-        .request<any, AxiosResponse<ApiResponse<Page<Unit>, any>>>({
-            url: "/api/v1/units",
-            method: "GET",
-            params: params
-        })
+    return httpClient.request<any, AxiosResponse<ApiResponse<Page<Unit>, any>>>({
+        url: "/api/v1/units",
+        method: "GET",
+        params: params
+    })
 }
 
-const getUnit = (unitId: number) => {
-    return httpClient
-        .request<any, AxiosResponse<ApiResponse<Unit, any>>>({
-            url: "/api/v1/units/" + unitId,
-            method: "GET",
-        })
+const getUnit = (unitId: string) => {
+    return httpClient.request<any, AxiosResponse<ApiResponse<Unit, any>>>({
+        url: "/api/v1/units/" + unitId,
+        method: "GET",
+    })
 }
 
 const createUnit = (createUnitRequest: CreateUnitRequest) => {
-    return httpClient
-        .request<CreateUnitRequest, AxiosResponse<ApiResponse<Unit, any>>>({
-            url: "/api/v1/units",
-            method: "POST",
-            data: createUnitRequest
-        })
+    return httpClient.request<CreateUnitRequest, AxiosResponse<ApiResponse<Unit, any>>>({
+        url: "/api/v1/units",
+        method: "POST",
+        data: createUnitRequest
+    })
 }
 
-const updateUnit = (unitId: number,
+const updateUnit = (unitId: string,
                     updateUnitRequest: UpdateUnitRequest) => {
-    return httpClient
-        .request<UpdateUnitRequest, AxiosResponse<ApiResponse<Unit, any>>>({
-            url: "/api/v1/units/" + unitId,
-            method: "PUT",
-            data: updateUnitRequest
-        })
+    return httpClient.request<UpdateUnitRequest, AxiosResponse<ApiResponse<Unit, any>>>({
+        url: "/api/v1/units/" + unitId,
+        method: "PUT",
+        data: updateUnitRequest
+    })
 }
 
-const deleteUnit = (unitId: number) => {
-    return httpClient
-        .request<any, AxiosResponse<ApiResponse<number, any>>>({
-            url: "/api/v1/units/" + unitId,
-            method: "DELETE",
-        })
+const deleteUnit = (unitId: string) => {
+    return httpClient.request<any, AxiosResponse<ApiResponse<any, any>>>({
+        url: "/api/v1/units/" + unitId,
+        method: "DELETE",
+    })
 }
 
 export const unitApiService = {

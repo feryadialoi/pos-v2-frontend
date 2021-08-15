@@ -21,7 +21,7 @@ const getWarehouses = (params: GetWarehousesParams) => {
 
 }
 
-const getWarehouse = (warehouseId: number) => {
+const getWarehouse = (warehouseId: string) => {
     return httpClient.request({
         url: "/api/v1/warehouses/" + warehouseId,
         method: "GET",
@@ -37,7 +37,7 @@ const createWarehouse = (createWarehouseRequest: CreateWarehouseRequest) => {
 }
 
 
-const updateWarehouse = (warehouseId, updateWarehouseRequest: UpdateWarehouseRequest) => {
+const updateWarehouse = (warehouseId: string, updateWarehouseRequest: UpdateWarehouseRequest) => {
     return httpClient.request({
         url: "/api/v1/warehouses/" + warehouseId,
         method: "PUT",
@@ -45,7 +45,7 @@ const updateWarehouse = (warehouseId, updateWarehouseRequest: UpdateWarehouseReq
     })
 }
 
-const deleteWarehouse = (warehouseId: number) => {
+const deleteWarehouse = (warehouseId: string) => {
     return httpClient.request({
         url: "/api/v1/warehouses/" + warehouseId,
         method: "DELETE"

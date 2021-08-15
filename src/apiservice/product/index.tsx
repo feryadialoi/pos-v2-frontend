@@ -22,7 +22,7 @@ const getProducts = (params: GetProductsParams) => {
     })
 }
 
-const getProduct = (productId: number) => {
+const getProduct = (productId: string) => {
     return httpClient.request<any, AxiosResponse<ApiResponse<Page<Product>, any>>>({
         url: "/api/v1/products/" + productId,
         method: "GET",
@@ -37,7 +37,7 @@ const createProduct = (createProductRequest: CreateProductRequest) => {
     })
 }
 
-const updateProduct = (productId: number, updateProductRequest: UpdateProductRequest) => {
+const updateProduct = (productId: string, updateProductRequest: UpdateProductRequest) => {
     return httpClient.request<any, AxiosResponse<ApiResponse<Product, any>>>({
         url: "/api/v1/products/" + productId,
         method: "PUT",
@@ -45,9 +45,9 @@ const updateProduct = (productId: number, updateProductRequest: UpdateProductReq
     })
 }
 
-const deleteProduct = (productId: number) => {
+const deleteProduct = (productId: string) => {
     return httpClient.request<any, AxiosResponse<ApiResponse<Product, any>>>({
-        url: "/api/v1/products",
+        url: "/api/v1/products/" + productId,
         method: "DELETE",
     })
 }

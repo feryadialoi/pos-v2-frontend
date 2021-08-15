@@ -21,7 +21,7 @@ const getCategories = (params: GetCategoriesParams) => {
 
 }
 
-const getCategory = (categoryId: number) => {
+const getCategory = (categoryId: string) => {
 
     return httpClient.request<any, AxiosResponse<ApiResponse<Category, any>>>({
         url: "/api/v1/categories/" + categoryId,
@@ -38,7 +38,7 @@ const createCategory = (createCategoryRequest: CreateCategoryRequest) => {
     })
 }
 
-const updateCategory = (categoryId: number, updateCategoryRequest: UpdateCategoryRequest) => {
+const updateCategory = (categoryId: string, updateCategoryRequest: UpdateCategoryRequest) => {
     return httpClient.request<UpdateCategoryRequest, AxiosResponse<ApiResponse<Category, any>>>({
         url: "/api/v1/categories/" + categoryId,
         method: "PUT",
@@ -46,8 +46,8 @@ const updateCategory = (categoryId: number, updateCategoryRequest: UpdateCategor
     })
 }
 
-const deleteCategory = (categoryId: number) => {
-    return httpClient.request<any, AxiosResponse<ApiResponse<number, any>>>({
+const deleteCategory = (categoryId: string) => {
+    return httpClient.request<any, AxiosResponse<ApiResponse<any, any>>>({
         url: "/api/v1/categories/" + categoryId,
         method: "DELETE",
     })
