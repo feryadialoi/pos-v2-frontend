@@ -1,11 +1,11 @@
-import {PageableRequest} from "../../models/requests/pageable-request";
+import {PageableRequest} from "../../models/requests/PageableRequest";
 import {httpClient} from "../http-client";
 import {AxiosResponse} from "axios";
-import {ApiResponse} from "../../models/responses/api-response";
+import {ApiResponse} from "../../models/responses/ApiResponse";
 import {Brand} from "../../models/Brand";
-import {CreateBrandRequest} from "../../models/requests/create-brand-request";
-import {Page} from "../../models/page";
-import {UpdateBrandRequest} from "../../models/requests/update-brand-request";
+import {CreateBrandRequest} from "../../models/requests/CreateBrandRequest";
+import {Page} from "../../models/Page";
+import {UpdateBrandRequest} from "../../models/requests/UpdateBrandRequest";
 
 interface GetBrandsParams extends PageableRequest {
     name?: string | null

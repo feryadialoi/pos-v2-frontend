@@ -1,11 +1,11 @@
 import {httpClient} from "../http-client"
-import {PageableRequest} from "../../models/requests/pageable-request"
+import {PageableRequest} from "../../models/requests/PageableRequest"
 import {AxiosResponse} from "axios"
-import {ApiResponse} from "../../models/responses/api-response"
-import {Page} from "../../models/page"
+import {ApiResponse} from "../../models/responses/ApiResponse"
+import {Page} from "../../models/Page"
 import {Unit} from "../../models/Unit"
-import {CreateUnitRequest} from "../../models/requests/create-unit-request"
-import {UpdateUnitRequest} from "../../models/requests/update-unit-request"
+import {CreateUnitRequest} from "../../models/requests/CreateUnitRequest"
+import {UpdateUnitRequest} from "../../models/requests/UpdateUnitRequest"
 
 
 interface GetUnitsParams extends PageableRequest {

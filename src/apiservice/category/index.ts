@@ -1,11 +1,11 @@
-import {PageableRequest} from "../../models/requests/pageable-request";
+import {PageableRequest} from "../../models/requests/PageableRequest";
 import {httpClient} from "../http-client";
 import {AxiosResponse} from "axios";
-import {Page} from "../../models/page";
+import {Page} from "../../models/Page";
 import {Category} from "../../models/Category";
-import {ApiResponse} from "../../models/responses/api-response";
-import {CreateCategoryRequest} from "../../models/requests/create-category-request";
-import {UpdateCategoryRequest} from "../../models/requests/update-category-request";
+import {ApiResponse} from "../../models/responses/ApiResponse";
+import {CreateCategoryRequest} from "../../models/requests/CreateCategoryRequest";
+import {UpdateCategoryRequest} from "../../models/requests/UpdateCategoryRequest";
 
 export interface GetCategoriesParams extends PageableRequest {
     name?: string | null

@@ -8,8 +8,8 @@ import {
 } from "./http-error";
 import {authLocalPersistence} from "../localpersistence/auth";
 import {userLocalPersistence} from "../localpersistence/user";
-import {ApiResponse} from "../models/responses/api-response";
-import {Mapping} from "../models/mapping";
+import {ApiResponse} from "../models/responses/ApiResponse";
+import {Mapping} from "../models/Mapping";
 import {httpHeaders, httpHeadersValue} from "./http-headers";
 import {store} from "../redux/storeConfig/store";
 import {setAccessToken} from "../redux/actions/auth";

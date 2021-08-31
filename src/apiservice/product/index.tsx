@@ -1,11 +1,11 @@
-import {PageableRequest} from "../../models/requests/pageable-request";
+import {PageableRequest} from "../../models/requests/PageableRequest";
 import {httpClient} from "../http-client";
 import {AxiosResponse} from "axios";
-import {ApiResponse} from "../../models/responses/api-response";
-import {Page} from "../../models/page";
+import {ApiResponse} from "../../models/responses/ApiResponse";
+import {Page} from "../../models/Page";
 import {Product} from "../../models/Product";
-import {CreateProductRequest} from "../../models/requests/create-product-request";
-import {UpdateProductRequest} from "../../models/requests/update-product-request";
+import {CreateProductRequest} from "../../models/requests/CreateProductRequest";
+import {UpdateProductRequest} from "../../models/requests/UpdateProductRequest";
 
 interface GetProductsParams extends PageableRequest {
     name?: string | null

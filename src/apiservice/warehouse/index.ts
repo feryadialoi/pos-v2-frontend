@@ -1,11 +1,11 @@
 import {httpClient} from "../http-client";
 import {AxiosResponse} from "axios";
-import {ApiResponse} from "../../models/responses/api-response";
-import {Page} from "../../models/page";
+import {ApiResponse} from "../../models/responses/ApiResponse";
+import {Page} from "../../models/Page";
 import {Warehouse} from "../../models/Warehouse";
-import {CreateWarehouseRequest} from "../../models/requests/create-warehouse-request";
-import {UpdateWarehouseRequest} from "../../models/requests/update-warehouse-request";
-import {PageableRequest} from "../../models/requests/pageable-request";
+import {CreateWarehouseRequest} from "../../models/requests/CreateWarehouseRequest";
+import {UpdateWarehouseRequest} from "../../models/requests/UpdateWarehouseRequest";
+import {PageableRequest} from "../../models/requests/PageableRequest";
 
 interface GetWarehousesParams extends PageableRequest {
     name?: string | null
@@ -19,6 +19,13 @@ const getWarehouses = (params: GetWarehousesParams) => {
         params: params
     })
 
+}
+
+const getListWarehouse = () => {
+    return httpClient.request<any, AxiosResponse<ApiResponse<Warehouse[], any>>>({
+        url: "/api/v1/warehouses/list",
+        method: "GET"
+    })
 }
 
 const getWarehouse = (warehouseId: string) => {
@@ -55,6 +62,7 @@ const deleteWarehouse = (warehouseId: string) => {
 
 export const warehouseApiService = {
     getWarehouses,
+    getListWarehouse,
     getWarehouse,
     createWarehouse,
     updateWarehouse,

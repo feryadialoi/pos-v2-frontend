@@ -1,9 +1,9 @@
 import {httpClient} from "../http-client";
-import {LoginRequest} from "../../models/requests/login-request";
+import {LoginRequest} from "../../models/requests/LoginRequest";
 import {AxiosResponse} from "axios"
-import {LoginResponse} from "../../models/responses/login-response"
-import {ApiResponse} from "../../models/responses/api-response"
-import {Mapping} from "../../models/mapping";
+import {LoginResponse} from "../../models/responses/LoginResponse"
+import {ApiResponse} from "../../models/responses/ApiResponse"
+import {Mapping} from "../../models/Mapping";
 import {httpHeaders, httpHeadersValue} from "../http-headers";
 
 const login = (loginRequest: LoginRequest) => {
