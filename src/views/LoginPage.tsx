@@ -21,7 +21,7 @@ import {
     Spinner
 } from 'reactstrap'
 import '@styles/base/pages/page-auth.scss'
-import {Mapping} from "../models/mapping"
+import {Mapping} from "../models/Mapping"
 import {authApiService} from "../apiservice/auth"
 import {HttpError, HttpUnauthorizedError} from "../apiservice/http-error"
 import {useForm} from "react-hook-form"
