@@ -1,0 +1,5 @@
+import {CompanySettingOfUpdateCompanySettingWithChartOfAccountRequest} from "./CompanySettingOfUpdateCompanySettingWithChartOfAccountRequest";
+
+export interface UpdateBatchCompanySettingWithChartOfAccountRequest {
+    companySettings: CompanySettingOfUpdateCompanySettingWithChartOfAccountRequest[]
+}

@@ -1,5 +1,6 @@
-import {DefaultUnit, ProductUnitConversion} from "../Product";
+
 import {Unit} from "../Unit";
+import {ProductUnitConversionRequest} from "./ProductUnitConversionRequest";
 
 export interface CreateProductRequest {
     name: string
@@ -7,6 +8,6 @@ export interface CreateProductRequest {
     categoryId: string
     brandId: string
     unitIds: string[]
-    unitConversions: ProductUnitConversion[]
+    unitConversions: ProductUnitConversionRequest[]
     idempotentKey?: string
 }

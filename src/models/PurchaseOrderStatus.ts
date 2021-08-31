@@ -1,0 +1,1 @@
+export type PurchaseOrderStatus = "DRAFT" | "APPROVED" | "AWAITING_APPROVAL"

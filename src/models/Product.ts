@@ -1,8 +1,7 @@
 import {Category} from "./Category";
 import {Unit} from "./Unit";
 import {Brand} from "./Brand";
-
-export type DefaultUnit = "LARGE" | "MEDIUM" | "SMALL"
+import {ProductUnitConversion} from "./ProductUnitConversion";
 
 export interface Product {
     id: string
@@ -12,10 +11,4 @@ export interface Product {
     brand: Brand
     units: Unit[]
     unitConversions: ProductUnitConversion[]
-}
-
-export interface ProductUnitConversion {
-    fromUnitId: string
-    multiplier: number
-    toUnitId: string
 }

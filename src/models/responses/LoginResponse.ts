@@ -1,4 +1,4 @@
-import {UserData} from "../user-data";
+import {UserData} from "../UserData";
 
 export interface LoginResponse {
     userId: string

@@ -1,0 +1,1 @@
+export type CompanySettingValueType = "STRING" | "INTEGER" | "LONG" | "BIG_DECIMAL" | "BOOLEAN" | "DOUBLE" | "FLOAT"

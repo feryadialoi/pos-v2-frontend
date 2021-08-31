@@ -1,0 +1,1 @@
+export type CompanySettingCategory = "CHART_OF_ACCOUNT" | "GENERAL" | "OTHER"

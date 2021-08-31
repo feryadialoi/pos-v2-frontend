@@ -1,0 +1,1 @@
+export type PurchaseStatus = "UNPAID" | "PARTIAL_PAID" | "PAID"
