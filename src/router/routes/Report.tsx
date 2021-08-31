@@ -17,7 +17,7 @@ const ReportRoutes: AppRoute[] = [
         }
     },
     {
-        path: "/reports/product-stocks",
+        path: "/reports/setting-product-stocks",
         component: lazy(() => import("../../views/report/product-stock/ProductStockPage")),
         meta: {
             authRoute: true
