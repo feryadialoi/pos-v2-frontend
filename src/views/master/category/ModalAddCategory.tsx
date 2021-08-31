@@ -59,6 +59,7 @@ const ModalAddCategory = ({modalToggle, headerToggle, onClick, onClose, isOpen}:
 
     return (
         <Modal
+            autoFocus={false}
             className={classnames("d-flex d-inline-block", {"modal-dialog-centered": true})}
             // scrollable
             isOpen={isOpen}
@@ -70,7 +71,7 @@ const ModalAddCategory = ({modalToggle, headerToggle, onClick, onClose, isOpen}:
                     <FormGroup>
                         <Label for='name'>Nama <span className='text-danger'>*</span></Label>
                         <Input
-                            autoFocus
+                            autoFocus={true}
                             name='name'
                             id='name'
                             placeholder=''
