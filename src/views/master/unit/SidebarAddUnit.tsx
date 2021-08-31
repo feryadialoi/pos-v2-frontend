@@ -5,7 +5,7 @@ import {useForm} from 'react-hook-form'
 import {Button, FormGroup, Label, FormText, Form, Input} from 'reactstrap'
 import {unitApiService} from "../../../apiservice/unit";
 import {useDispatch} from "react-redux";
-import {setUnits} from "../../../redux/actions/unit";
+import {setPageOfUnit} from "../../../redux/actions/unit";
 
 
 const SidebarAddUnit = ({open, toggleSidebar, onCreateSuccess, closeOnSuccess, closeOnError}) => {

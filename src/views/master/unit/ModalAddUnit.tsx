@@ -17,6 +17,7 @@ import {yupResolver} from '@hookform/resolvers/yup'
 import {unitApiService} from "../../../apiservice/unit";
 import {notifySuccess} from "../../component/SuccessToast";
 import {notifyError} from "../../component/ErrorToast";
+import {useEffect, useRef} from "react";
 
 interface ModalAddUnitProps {
     isOpen: boolean
@@ -28,6 +29,8 @@ interface ModalAddUnitProps {
 
 
 const ModalAddUnit = ({modalToggle, headerToggle, onClick, onClose, isOpen}: ModalAddUnitProps) => {
+
+
     const SignupSchema = yup.object().shape({
         name: yup.string().required("Nama belum diisi")
     })
@@ -55,9 +58,9 @@ const ModalAddUnit = ({modalToggle, headerToggle, onClick, onClose, isOpen}: Mod
 
     }
 
-
     return (
         <Modal
+            autoFocus={false}
             className={classnames("d-flex d-inline-block", {"modal-dialog-centered": true})}
             // scrollable
             isOpen={isOpen}
@@ -69,7 +72,7 @@ const ModalAddUnit = ({modalToggle, headerToggle, onClick, onClose, isOpen}: Mod
                     <FormGroup>
                         <Label for='name'>Nama <span className='text-danger'>*</span></Label>
                         <Input
-                            autoFocus
+                            autoFocus={true}
                             name='name'
                             id='name'
                             placeholder=''

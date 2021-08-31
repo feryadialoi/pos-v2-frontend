@@ -71,6 +71,7 @@ const ModalUpdateUnit = ({unit, modalToggle, headerToggle, onClick, onClose, isO
 
     return (
         <Modal
+            autoFocus={false}
             className={classnames("d-flex d-inline-block", {"modal-dialog-centered": true})}
             // scrollable
             isOpen={isOpen}
@@ -83,7 +84,7 @@ const ModalUpdateUnit = ({unit, modalToggle, headerToggle, onClick, onClose, isO
                         <Label for='name'>Nama <span className='text-danger'>*</span></Label>
                         <Input
                             defaultValue={unit.name}
-                            autoFocus
+                            autoFocus={true}
                             name='name'
                             id='name'
                             placeholder=''
