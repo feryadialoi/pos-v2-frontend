@@ -1,5 +1,5 @@
 import {SET_USER_ID, SET_USER_DATA} from "../../types/user";
-import {UserData} from "../../../models/user-data";
+import {UserData} from "../../../models/UserData";
 import {userLocalPersistence} from "../../../localpersistence/user";
 
 interface SetUserId {

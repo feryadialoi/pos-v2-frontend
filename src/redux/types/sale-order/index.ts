@@ -1,0 +1,1 @@
+export const SET_PAGE_OF_SALE_ORDER = "SET_PAGE_OF_SALE_ORDER"

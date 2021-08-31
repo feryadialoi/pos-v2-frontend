@@ -1,15 +1,15 @@
-import {SET_CATEGORIES} from "../../types/category";
-import {Page} from "../../../models/page";
+import {SET_PAGE_OF_CATEGORY} from "../../types/category";
+import {Page} from "../../../models/Page";
 import {Category} from "../../../models/Category";
 
-interface SetCategories {
-    type: typeof SET_CATEGORIES
+interface SetPageOfCategory {
+    type: typeof SET_PAGE_OF_CATEGORY
     payload: Page<Category>
 }
 
-export type CategoryActionTypes = SetCategories
+export type CategoryActionTypes = SetPageOfCategory
 
-export const setCategories = (payload: Page<Category>): CategoryActionTypes => {
+export const setPageOfCategory = (payload: Page<Category>): CategoryActionTypes => {
 
-    return ({type: SET_CATEGORIES, payload})
+    return ({type: SET_PAGE_OF_CATEGORY, payload})
 }

@@ -514,7 +514,7 @@ $search-bar-height: 48px;
     }
   }
 }
-// Media queries to change grid columns in different Screens and to hide search results below 768px
+// Media queries to change grid columnsOfModalImportPurchaseOrder in different Screens and to hide search results below 768px
 @include media-breakpoint-down(lg) {
   .ecommerce-application {
     // Header item area

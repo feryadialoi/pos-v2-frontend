@@ -1,1 +1,1 @@
-export const SET_PRODUCTS = "SET_PRODUCTS"
+export const SET_PAGE_OF_PRODUCT = "SET_PAGE_OF_PRODUCT"

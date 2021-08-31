@@ -1,4 +1,4 @@
-import {Page} from "../../../models/page";
+import {Page} from "../../../models/Page";
 import {Warehouse} from "../../../models/Warehouse";
 
 export interface WarehouseState {

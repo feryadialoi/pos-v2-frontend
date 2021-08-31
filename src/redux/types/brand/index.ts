@@ -1,1 +1,1 @@
-export const SET_BRANDS = "SET_BRANDS"
+export const SET_PAGE_OF_BRAND = "SET_PAGE_OF_BRAND"

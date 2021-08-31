@@ -1,15 +1,15 @@
-import {SET_UNITS} from "../../types/unit";
+import {SET_PAGE_OF_UNIT} from "../../types/unit";
 import {Unit} from "../../../models/Unit";
-import {Page} from "../../../models/page";
+import {Page} from "../../../models/Page";
 
-interface SetUnits {
-    type: typeof SET_UNITS
+interface SetPageOfUnit {
+    type: typeof SET_PAGE_OF_UNIT
     payload: Page<Unit>
 }
 
-export type UnitActionTypes = SetUnits
+export type UnitActionTypes = SetPageOfUnit
 
-export const setUnits = (payload: Page<Unit>): UnitActionTypes => {
+export const setPageOfUnit = (payload: Page<Unit>): UnitActionTypes => {
 
-    return ({type: SET_UNITS, payload})
+    return ({type: SET_PAGE_OF_UNIT, payload})
 }

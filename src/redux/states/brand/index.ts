@@ -1,4 +1,4 @@
-import {Page} from "../../../models/page";
+import {Page} from "../../../models/Page";
 import {Brand} from "../../../models/Brand";
 
 export interface BrandState {

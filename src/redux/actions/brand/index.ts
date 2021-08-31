@@ -1,18 +1,18 @@
-import {SET_BRANDS} from "../../types/brand";
+import {SET_PAGE_OF_BRAND} from "../../types/brand";
 import {Brand} from "../../../models/Brand";
-import {Page} from "../../../models/page";
+import {Page} from "../../../models/Page";
 
 
-interface SetBrands {
-    type: typeof SET_BRANDS
+interface SetPageOfBrand {
+    type: typeof SET_PAGE_OF_BRAND
     payload: Page<Brand>
 }
 
-export type BrandActionTypes = SetBrands
+export type BrandActionTypes = SetPageOfBrand
 
 
-export const setBrands = (payload: Page<Brand>): BrandActionTypes => {
+export const setPageOfBrand = (payload: Page<Brand>): BrandActionTypes => {
     
 
-    return ({type: SET_BRANDS, payload})
+    return ({type: SET_PAGE_OF_BRAND, payload})
 }
