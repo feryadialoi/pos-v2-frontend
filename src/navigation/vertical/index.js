@@ -10,7 +10,7 @@ import {
     Briefcase,
     Grid,
     BookOpen,
-    Book, BarChart2, BarChart
+    Book, BarChart2, BarChart, Settings
 } from 'react-feather'
 
 export default [
@@ -144,8 +144,8 @@ export default [
         ]
     },
     {
-        id: 'warehousing',
-        title: 'Gudang',
+        id: 'logistic',
+        title: 'Logistik',
         icon: <Box size={20}/>,
         children: [
             {
@@ -153,12 +153,6 @@ export default [
                 title: 'Penyesuaian Stok',
                 icon: <Circle size={12}/>,
                 navLink: '/stock-adjustments'
-            },
-            {
-                id: 'warehouseCreate',
-                title: 'Tambah Gudang',
-                icon: <Circle size={12}/>,
-                navLink: '/warehouses/create'
             }
         ]
     },
@@ -171,7 +165,7 @@ export default [
                 id: 'coa',
                 title: 'COA',
                 icon: <Circle size={12}/>,
-                navLink: '/coa'
+                navLink: '/chart-of-account'
             },
             {
                 id: 'journal',
@@ -258,13 +252,38 @@ export default [
                 id: 'productStock',
                 title: "Laporan Stok Produk",
                 icon: <Circle size={20}/>,
-                navLink: '/reports/product-stocks'
+                navLink: '/reports/setting-product-stocks'
             },
             {
                 id: 'stockMutation',
                 title: "Laporan Mutasi Stok",
                 icon: <Circle size={20}/>,
                 navLink: '/reports/stock-mutations'
+            },
+        ]
+    },
+    {
+        id: "setting",
+        title: "Pengaturan",
+        icon: <Settings size={20}/>,
+        children: [
+            {
+                id: 'settingProduct',
+                title: "Pengaturan Produk",
+                icon: <Circle size={20}/>,
+                navLink: '/settings/products'
+            },
+            {
+                id: 'settingCoa',
+                title: "Pengaturan Akun",
+                icon: <Circle size={20}/>,
+                navLink: '/settings/coas'
+            },
+            {
+                id: 'settingCompany',
+                title: "Pengaturan Perusahaan",
+                icon: <Circle size={20}/>,
+                navLink: '/settings/companies'
             },
         ]
     }
