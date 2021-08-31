@@ -3,8 +3,8 @@ import {AppRoute} from "./index";
 
 const AccountingRoutes: AppRoute[] = [
     {
-        path: "/coa",
-        component: lazy(() => import("../../views/accounting/coa/CoaPage")),
+        path: "/chart-of-account",
+        component: lazy(() => import("../../views/accounting/chart-of-account/ChartOfAccountPage")),
         meta: {
             authRoute: true
         }
