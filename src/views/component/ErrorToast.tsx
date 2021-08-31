@@ -16,7 +16,7 @@ const ErrorToast = ({message}: ErrorToastProps) => {
                     <Avatar size='sm' color='danger' icon={<X size={12}/>}/>
                     <h6 className='toast-title'>Error!</h6>
                 </div>
-                <small className='text-muted'>11 Min Ago</small>
+                {/*<small className='text-muted'>11 Min Ago</small>*/}
             </div>
             <div className='toastify-body'>
               <span role='img' aria-label='toast-text'>
