@@ -1,7 +1,8 @@
 import {Fragment} from "react";
 import {Card, CardHeader, CardTitle} from "reactstrap";
+import Table from "./Table";
 
-const CoaPage = () => {
+const ChartOfAccountPage = () => {
     return (
         <Fragment>
             <Card>
@@ -9,8 +10,9 @@ const CoaPage = () => {
                     <CardTitle>Kode Akun Akuntansi</CardTitle>
                 </CardHeader>
             </Card>
+            <Table/>
         </Fragment>
     )
 }
 
-export default CoaPage
+export default ChartOfAccountPage
