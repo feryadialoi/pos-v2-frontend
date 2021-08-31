@@ -1,5 +1,6 @@
 import {Fragment} from "react";
 import {Card, CardHeader, CardTitle} from "reactstrap";
+import Table from "./Table";
 
 const PurchaseOrderPage = () => {
     return (
@@ -11,6 +12,7 @@ const PurchaseOrderPage = () => {
                     </CardTitle>
                 </CardHeader>
             </Card>
+            <Table/>
         </Fragment>
     )
 }
