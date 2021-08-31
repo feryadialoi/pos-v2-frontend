@@ -78,6 +78,7 @@ const ModalUpdateBrand = (
 
     return (
         <Modal
+            autoFocus={false}
             className={classnames("d-flex d-inline-block", {"modal-dialog-centered": true})}
             // scrollable
             isOpen={isOpen}
@@ -90,7 +91,7 @@ const ModalUpdateBrand = (
                         <Label for='name'>Nama <span className='text-danger'>*</span></Label>
                         <Input
                             defaultValue={brand.name}
-                            autoFocus
+                            autoFocus={true}
                             name='name'
                             id='name'
                             placeholder=''

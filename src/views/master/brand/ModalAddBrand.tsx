@@ -20,7 +20,7 @@ import {notifyError} from "../../component/ErrorToast";
 import {categoryApiService} from "../../../apiservice/category";
 import {brandApiService} from "../../../apiservice/brand";
 
-interface ModalAddCategoryProps {
+interface ModalAddBrandProps {
     isOpen: boolean
     modalToggle: () => void
     headerToggle: () => void
@@ -29,7 +29,7 @@ interface ModalAddCategoryProps {
 }
 
 
-const ModalAddBrand = ({modalToggle, headerToggle, onClick, onClose, isOpen}: ModalAddCategoryProps) => {
+const ModalAddBrand = ({modalToggle, headerToggle, onClick, onClose, isOpen}: ModalAddBrandProps) => {
     const SignupSchema = yup.object().shape({
         name: yup.string().required("Nama belum diisi")
     })
@@ -60,6 +60,7 @@ const ModalAddBrand = ({modalToggle, headerToggle, onClick, onClose, isOpen}: Mo
 
     return (
         <Modal
+            autoFocus={false}
             className={classnames("d-flex d-inline-block", {"modal-dialog-centered": true})}
             // scrollable
             isOpen={isOpen}
@@ -71,7 +72,7 @@ const ModalAddBrand = ({modalToggle, headerToggle, onClick, onClose, isOpen}: Mo
                     <FormGroup>
                         <Label for='name'>Nama <span className='text-danger'>*</span></Label>
                         <Input
-                            autoFocus
+                            autoFocus={true}
                             name='name'
                             id='name'
                             placeholder=''
