@@ -1,58 +1,74 @@
-import {Fragment, useRef} from "react";
+import {Fragment, useEffect, useRef} from "react";
 // @ts-ignore
 import {selectThemeColors} from '@utils'
-import {Button, Col, CustomInput, Form, FormFeedback, FormGroup, Input, Label, Row} from "reactstrap";
+import {
+    Button,
+    Col,
+    CustomInput,
+    Form,
+    FormFeedback,
+    FormGroup,
+    Input,
+    Label,
+    ModalBody,
+    ModalFooter,
+    Row
+} from "reactstrap";
 import Select from "react-select";
-import {useForm, Controller} from "react-hook-form";
 import {Plus, X} from "react-feather";
 import {useState} from "react";
-import {SlideDown} from 'react-slidedown'
+import {v4 as uuidv4} from 'uuid';
 // @ts-ignore
 import Repeater from '@components/repeater'
 import {Unit} from "../../../models/Unit";
-import * as yup from 'yup'
-import {yupResolver} from '@hookform/resolvers/yup'
 import classnames from "classnames";
-import {CreateProductRequest} from "../../../models/requests/create-product-request";
+import {CreateProductRequest} from "../../../models/requests/CreateProductRequest";
 import {productApiService} from "../../../apiservice/product";
-import {ProductUnitConversion} from "../../../models/Product";
 import {notifySuccess} from "../../component/SuccessToast";
 import CurrencyInput from "react-currency-input-field";
+import {categoryApiService} from "../../../apiservice/category";
+import {brandApiService} from "../../../apiservice/brand";
+import {unitApiService} from "../../../apiservice/unit";
+import {Category} from "../../../models/Category";
+import {Page} from "../../../models/Page";
+import {ApiResponse} from "../../../models/responses/ApiResponse";
+import {AxiosResponse} from "axios";
+import {Brand} from "../../../models/Brand";
+import {notifyError} from "../../component/ErrorToast";
+import {ProductUnitConversionRequest} from "../../../models/requests/ProductUnitConversionRequest";
+import {SelectOptions} from "../../../models/SelectOptions";
 
 
-const brandOptions = [
-    {value: "1", label: "Pilot"},
-    {value: "2", label: "Standard"},
-    {value: "3", label: "Joyko"},
-    {value: "4", label: "Kenko"},
-]
+// const brandOptions = [
+//     {value: "1", label: "Pilot"},
+//     {value: "2", label: "Standard"},
+//     {value: "3", label: "Joyko"},
+//     {value: "4", label: "Kenko"},
+// ]
+//
+// const categoryOptions = [
+//     {value: "1", label: "Bahan percetakan"},
+//     {value: "2", label: "ATK"},
+//     {value: "3", label: "Makanan"},
+//     {value: "4", label: "Minuman"},
+// ]
+//
+// const unitOptions = [
+//     {value: "1", label: "Dus"},
+//     {value: "2", label: "Box"},
+//     {value: "3", label: "Pcs"},
+//     {value: "4", label: "Meter"},
+//     {value: "5", label: "Roll"},
+//     {value: "6", label: "Buah"},
+// ]
+//
 
-const categoryOptions = [
-    {value: "1", label: "Bahan percetakan"},
-    {value: "2", label: "ATK"},
-    {value: "3", label: "Makanan"},
-    {value: "4", label: "Minuman"},
-]
 
-const unitOptions = [
-    {value: "1", label: "Dus"},
-    {value: "2", label: "Box"},
-    {value: "3", label: "Pcs"},
-    {value: "4", label: "Meter"},
-    {value: "5", label: "Roll"},
-    {value: "6", label: "Buah"},
-]
-
-
-interface Options {
-    label: string
-    value: string
-}
 
 interface UnitSelect {
     multiplier: string
     multiplierError: null | string,
-    unit: Options | null
+    unit: SelectOptions | null
     unitError: null | string,
 }
 
@@ -60,9 +76,9 @@ interface ProductForm {
     name: string
     nameError: null | string
     code: string
-    category: null | Options
+    category: null | SelectOptions
     categoryError: null | string
-    brand: null | Options
+    brand: null | SelectOptions
     brandError: null | string
 }
 
@@ -85,7 +101,22 @@ const initialUnit: UnitSelect = {
 
 const MAX_UNIT_COUNT = 2
 
-const ProductGeneralInformation = () => {
+const idempotentKey: string = uuidv4()
+
+
+interface ProductGeneralInformationProps {
+    onSuccess: () => void
+}
+
+const ProductGeneralInformation = ({onSuccess}: ProductGeneralInformationProps) => {
+
+
+    // ** state
+    const [unitOptions, setUnitOptions] = useState<SelectOptions[]>([])
+
+    const [categoryOptions, setCategoryOptions] = useState<SelectOptions[]>([])
+
+    const [brandOptions, setBrandOptions] = useState<SelectOptions[]>([])
 
     const [product, setProduct] = useState<ProductForm>({
         name: "",
@@ -106,6 +137,64 @@ const ProductGeneralInformation = () => {
 
     const [units, setUnits] = useState<UnitSelect[]>([])
 
+    // ** methods
+    const loadOptions = () => {
+        Promise.allSettled([
+            categoryApiService.getCategories({}),
+            brandApiService.getBrands({}),
+            unitApiService.getUnits({})
+        ]).then(promises => {
+            handlePromiseOfCategory(promises[0])
+            handlePromiseOfBrand(promises[1])
+            handlePromiseOfUnit(promises[2])
+        })
+    }
+
+    const handlePromiseOfCategory = (promise: PromiseSettledResult<AxiosResponse<ApiResponse<Page<Category>, any>>>) => {
+        if (promise.status == "fulfilled") {
+            setCategoryOptions(promise.value.data.data.content.map(item => {
+                return {
+                    value: item.id.toString(),
+                    label: item.name
+                }
+            }))
+        } else {
+            console.log('category promise rejected', promise.reason)
+        }
+    }
+
+    const handlePromiseOfBrand = (promise: PromiseSettledResult<AxiosResponse<ApiResponse<Page<Brand>, any>>>) => {
+        if (promise.status == "fulfilled") {
+            setBrandOptions(promise.value.data.data.content.map(item => {
+                return {
+                    value: item.id.toString(),
+                    label: item.name
+                }
+            }))
+        } else {
+            console.log('brand promise rejected', promise.reason)
+        }
+    }
+
+    const handlePromiseOfUnit = (promise: PromiseSettledResult<AxiosResponse<ApiResponse<Page<Unit>, any>>>) => {
+        if (promise.status == "fulfilled") {
+            setUnitOptions(promise.value.data.data.content.map(item => {
+                return {
+                    value: item.id.toString(),
+                    label: item.name
+                }
+            }))
+        } else {
+            console.log('unit promise rejected', promise.reason)
+        }
+    }
+
+    useEffect(() => {
+        loadOptions()
+    }, [])
+
+
+    // **
     const handleInputProductName = (event) => {
         setProduct(val => ({...val, name: event.target.value}))
     }
@@ -161,12 +250,19 @@ const ProductGeneralInformation = () => {
         setUnits(tempUnits)
     }
 
+    // ** validating value with error message
     const validateUnit = () => {
-        setUnit((val) => ({
-            ...val,
-            unitError: !val.unit ? "Satuan belum dipilih" : null,
-            multiplierError: !val.multiplier ? "Multiplier belum diisi" : null,
-        }))
+        return new Promise<UnitSelect>(resolve => {
+            setUnit((prevState) => {
+                const state = ({
+                    ...prevState,
+                    unitError: !prevState.unit ? "Satuan belum dipilih" : null,
+                    multiplierError: !prevState.multiplier ? "Multiplier belum diisi" : null,
+                })
+                resolve(state)
+                return state
+            })
+        })
     }
 
     const unitsUnitValidation = (item: UnitSelect, index: number, arr: UnitSelect[]): string | null => {
@@ -184,50 +280,57 @@ const ProductGeneralInformation = () => {
 
     const unitsMultiplierValidation = (item: UnitSelect, index: number, arr: UnitSelect[]): string | null => {
         const MULTIPLIER_REQUIRED_ERROR = "Multiplier belum diisi"
-        const MULTIPLIER_SAME_AS_BEFORE_ERROR = "Multiplier tidak boleh sama dengan multiplier di atasnya"
-
         if (item.multiplier == undefined || item.multiplier == "" || item.multiplier == "0") return MULTIPLIER_REQUIRED_ERROR
-
         return null
     }
 
     const validateUnits = () => {
-        let tempUnits = [...units]
-        tempUnits = tempUnits.map((item, index, arr) => {
-            item.unitError = unitsUnitValidation(item, index, arr)
-            item.multiplierError = unitsMultiplierValidation(item, index, arr)
-            // !item.multiplier ? item.multiplierError = "Multiplier belum diisi" : item.multiplierError = null
-            return item
+        return new Promise<UnitSelect[]>(resolve => {
+            setUnits(prevState => {
+                const state = prevState.map((item, index, arr) => ({
+                    ...item,
+                    unitError: unitsUnitValidation(item, index, arr),
+                    multiplierError: unitsMultiplierValidation(item, index, arr)
+                }))
+                resolve(state)
+                return state
+            })
         })
-
-        setUnits(tempUnits)
     }
 
     const validateProduct = () => {
-        setProduct(val => ({
-            ...val,
-            nameError: !val.name ? "Nama belum diisi" : null,
-            categoryError: !val.category ? "Kategori belum dipilih" : null,
-            brandError: !val.brand ? "Merk belum dipilih" : null,
-        }))
+        return new Promise<ProductForm>(resolve => {
+            setProduct(prevState => {
+                const state = ({
+                    ...prevState,
+                    nameError: !prevState.name ? "Nama belum diisi" : null,
+                    categoryError: !prevState.category ? "Kategori belum dipilih" : null,
+                    brandError: !prevState.brand ? "Merk belum dipilih" : null,
+                })
+                resolve(state)
+                return state
+            })
+        })
     }
 
-    const unitValid = () => {
-        return !unit.unitError
+    // ** get boolean value of validity
+    const unitValid = (unit: UnitSelect) => {
+        return unit.unitError == null
     }
 
-    const unitsValid = () => {
+    const unitsValid = (units: UnitSelect[]) => {
         if (units.length > 0) {
-            const filtered = units.filter(u => u.unitError || u.multiplierError)
-            return filtered.length == 0;
+            const filtered = units.filter(u => u.unitError == null && u.multiplierError == null)
+            return filtered.length == units.length;
         }
         return true
     }
 
-    const productValid = () => {
-        return !product.nameError && !product.categoryError && !product.brandError
+    const productValid = (product: ProductForm) => {
+        return product.nameError == null && product.categoryError == null && product.brandError == null
     }
 
+    // **
     const constructUnitConversion = () => {
 
         /**
@@ -237,88 +340,27 @@ const ProductGeneralInformation = () => {
          * * if there are 3 units, then there are 2 unit conversions
          */
 
-        const unitConversions: ProductUnitConversion[] = []
+        const unitConversions: ProductUnitConversionRequest[] = []
 
         units.forEach((item, index, arr) => {
             if (index === 0) {
-                const unitConversion: ProductUnitConversion = {
-                    fromUnitId: +unit.unit!.value,
+                const unitConversion: ProductUnitConversionRequest = {
+                    fromUnitId: unit.unit!.value,
                     multiplier: +arr[0].multiplier,
-                    toUnitId: +arr[0].unit!.value
+                    toUnitId: arr[0].unit!.value
                 }
                 unitConversions.push(unitConversion)
             } else {
-                const unitConversion: ProductUnitConversion = {
-                    fromUnitId: +arr[0].unit!.value,
+                const unitConversion: ProductUnitConversionRequest = {
+                    fromUnitId: arr[0].unit!.value,
                     multiplier: +arr[1].multiplier,
-                    toUnitId: +arr[1].unit!.value
+                    toUnitId: arr[1].unit!.value
                 }
                 unitConversions.push(unitConversion)
             }
         })
 
         return unitConversions
-    }
-
-    const createProduct = () => {
-        validateUnit()
-        validateUnits()
-        validateProduct()
-
-        const isUnitValid = unitValid()
-        const isUnitsValid = unitsValid()
-        const isProductValid = productValid()
-
-        if (isUnitValid && isUnitsValid && isProductValid) {
-
-            const listOfUnit = [unit, ...units]
-
-            const unitIds = listOfUnit.map(item => parseInt(item.unit!.value))
-            const unitConversions = constructUnitConversion()
-            const createProductRequest = {
-                name: product.name,
-                code: product.code,
-                categoryId: product.category?.value,
-                brandId: product.brand?.value,
-                unitIds: unitIds,
-                unitConversions: unitConversions
-            }
-
-            console.log("createProductRequest", createProductRequest)
-
-            notifySuccess("Produk tersimpan")
-
-            // const createProductRequest: CreateProductRequest = {
-            //     name: product.name,
-            //     code: product.code,
-            //     categoryId: +product.category!.value,
-            //     defaultUnit: "SMALL",
-            //     unitConversions: constructUnitConversion(),
-            //     unitLargeId: +unit.unit!.value,
-            //
-            //     unitMediumId: +units[0].unit!.value,
-            //
-            //     unitSmallId: +units[1].unit!.value,
-            // }
-
-            // console.log(createProductRequest)
-
-            // productApiService.createProduct(createProductRequest)
-            //     .then(response => {
-            //
-            //     })
-            //     .catch(error => {
-            //
-            //     })
-        } else {
-            if (isUnitValid) {
-            }
-            if (isUnitsValid) {
-            }
-            if (isProductValid) {
-            }
-        }
-
     }
 
     const resetProduct = () => {
@@ -330,17 +372,16 @@ const ProductGeneralInformation = () => {
     }
 
     const resetUnits = () => {
-        let tempUnits = [...units]
-        tempUnits = tempUnits.map(() => ({
-            multiplier: "1",
-            multiplierError: null,
-            unit: null,
-            unitError: null,
-            price: "",
-            priceError: null,
-            active: false
-        }))
-        setUnits(tempUnits)
+        setUnits(prevState => prevState.map(() => ({
+                multiplier: "1",
+                multiplierError: null,
+                unit: null,
+                unitError: null,
+                price: "",
+                priceError: null,
+                active: false
+            }))
+        )
     }
 
     const resetForm = () => {
@@ -349,164 +390,217 @@ const ProductGeneralInformation = () => {
         resetUnits()
     }
 
+    const createProduct = async () => {
+
+        const validatedUnit = await validateUnit()
+        const validatedUnits = await validateUnits()
+        const validatedProduct = await validateProduct()
+
+        const isUnitValid = unitValid(validatedUnit)
+        const isUnitsValid = unitsValid(validatedUnits)
+        const isProductValid = productValid(validatedProduct)
+
+        if (isUnitValid && isUnitsValid && isProductValid) {
+
+            const unitIds = [unit, ...units].map(item => item.unit!.value)
+            const unitConversions = constructUnitConversion()
+
+            const createProductRequest: CreateProductRequest = {
+                name: product.name,
+                code: product.code,
+                categoryId: product.category!.value,
+                brandId: product.brand!.value,
+                unitIds: unitIds,
+                unitConversions: unitConversions,
+                idempotentKey: idempotentKey
+            }
+
+            console.log("createProductRequest", createProductRequest)
+
+            try {
+                const response = await productApiService.createProduct(createProductRequest)
+                console.log('create setting-product response', response.data)
+                notifySuccess("Produk tersimpan")
+                onSuccess()
+            } catch (error) {
+                notifyError(error?.response?.data?.message)
+            }
+
+        } else {
+            if (isUnitValid) {
+            }
+            if (isUnitsValid) {
+            }
+            if (isProductValid) {
+            }
+        }
+
+    }
+
     return (
         <Fragment>
-            <h2>Produk</h2>
-            <Row>
-                <Col>
-                    <FormGroup>
-                        <Label>Nama <span className="text-danger">*</span></Label>
-                        <Input
-                            className={classnames('react-select', {'is-invalid': product.nameError})}
-                            value={product.name}
-                            onChange={handleInputProductName}
-                        />
-                        {product.nameError && <FormFeedback>{product.nameError}</FormFeedback>}
-                    </FormGroup>
-                </Col>
-            </Row>
-            <Row>
-                <Col>
-                    <FormGroup>
-                        <Label>Kode/SKU</Label>
-                        <Input value={product.code} onChange={handleInputProductCode}/>
-                    </FormGroup>
-                </Col>
-            </Row>
-            <Row>
-                <Col>
-                    <FormGroup>
-                        <Label htmlFor="category">Kategori <span className="text-danger">*</span></Label>
-                        <Select
-                            isClearable
-                            className={classnames('react-select', {'is-invalid': product.categoryError})}
-                            placeholder="Pilih Kategori"
-                            classNamePrefix='select'
-                            theme={selectThemeColors}
-                            name="category"
-                            options={categoryOptions}
-                            value={product.category}
-                            onChange={handleSelectProductCategory}
-                        />
-                        {product.categoryError && <FormFeedback>{product.categoryError}</FormFeedback>}
-                    </FormGroup>
-                </Col>
-                <Col>
-                    <FormGroup>
-                        <Label htmlFor="brand">Merk <span className="text-danger">*</span></Label>
-                        <Select
-                            isClearable
-                            className={classnames('react-select', {'is-invalid': product.brandError})}
-                            placeholder="Pilih Merk"
-                            classNamePrefix='select'
-                            theme={selectThemeColors}
-                            name="brand"
-                            options={brandOptions}
-                            value={product.brand}
-                            onChange={handleSelectProductBrand}
-                        />
-                        {product.brandError && <FormFeedback>{product.brandError}</FormFeedback>}
-                    </FormGroup>
-                </Col>
-            </Row>
-
-            <hr/>
-
-            <h2 className="mb-1">Satuan</h2>
-            <Row>
-                {/*<Col md={4}>*/}
-                {/*    <FormGroup>*/}
-                {/*        <Label>Multiplier</Label>*/}
-                {/*        <Input disabled value={1}/>*/}
-                {/*    </FormGroup>*/}
-                {/*</Col>*/}
-                <Col>
-                    <FormGroup>
-                        <Label>Satuan 1</Label>
-                        <Select
-                            className={classnames('react-select', {'is-invalid': unit.unitError})}
-                            placeholder="Pilih satuan"
-                            classNamePrefix='select'
-                            theme={selectThemeColors}
-                            name="unit"
-                            options={unitOptions}
-                            value={unit.unit}
-                            onChange={handleSelectUnit}
-                        />
-                        {unit.unitError && <FormFeedback>{unit.unitError}</FormFeedback>}
-                    </FormGroup>
-                </Col>
-                {/*<FormGroup>*/}
-                {/*    <Button outline className="mr-1 mt-2" color="primary" onClick={addSubUnit}>*/}
-                {/*        <Plus size={14}/>*/}
-                {/*    </Button>*/}
-                {/*</FormGroup>*/}
-            </Row>
-
-            {units.map((item, index) => (
-                <Row key={index}>
-                    <Col md={4}>
+            <ModalBody>
+                <h2>Produk</h2>
+                <Row>
+                    <Col>
                         <FormGroup>
-                            <Label>Multiplier</Label>
-                            <CurrencyInput
-                                className={classnames('form-control', {'is-invalid': item.multiplierError})}
-                                // className="form-control"
-                                name="price"
-                                placeholder="10"
-                                defaultValue={1000}
-                                decimalsLimit={2}
-                                groupSeparator={"."}
-                                decimalSeparator={","}
-                                value={item.multiplier}
-                                onValueChange={handleOnChangeSubUnitMultiplier(index)}
+                            <Label>Nama <span className="text-danger">*</span></Label>
+                            <Input
+                                autoFocus={true}
+                                className={classnames('react-select', {'is-invalid': product.nameError})}
+                                value={product.name}
+                                onChange={handleInputProductName}
                             />
-                            {/*<Input*/}
-                            {/*    id={`multiplierUnit${index}`}*/}
-                            {/*    name={`multiplierUnit${index}`}*/}
-                            {/*    onChange={handleOnChangeSubUnitMultiplier(index)}*/}
-                            {/*    value={item.multiplier}*/}
-                            {/*    placeholder="1"*/}
-                            {/*    type="number"*/}
-                            {/*    className={classnames({'is-invalid': item.multiplierError})}*/}
-                            {/*/>*/}
-                            {item.multiplierError && <FormFeedback>{item.multiplierError}</FormFeedback>}
+                            {product.nameError && <FormFeedback>{product.nameError}</FormFeedback>}
+                        </FormGroup>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        <FormGroup>
+                            <Label>Kode/SKU</Label>
+                            <Input value={product.code} onChange={handleInputProductCode}/>
+                        </FormGroup>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        <FormGroup>
+                            <Label htmlFor="category">Kategori <span className="text-danger">*</span></Label>
+                            <Select
+                                isClearable
+                                className={classnames('react-select', {'is-invalid': product.categoryError})}
+                                placeholder="Pilih Kategori"
+                                classNamePrefix='select'
+                                theme={selectThemeColors}
+                                name="category"
+                                options={categoryOptions}
+                                value={product.category}
+                                onChange={handleSelectProductCategory}
+                            />
+                            {product.categoryError && <FormFeedback>{product.categoryError}</FormFeedback>}
                         </FormGroup>
                     </Col>
                     <Col>
                         <FormGroup>
-                            <Label>Satuan {index + 2}</Label>
+                            <Label htmlFor="brand">Merk <span className="text-danger">*</span></Label>
                             <Select
                                 isClearable
-                                className={classnames('react-select', {'is-invalid': item.unitError})}
+                                className={classnames('react-select', {'is-invalid': product.brandError})}
+                                placeholder="Pilih Merk"
+                                classNamePrefix='select'
+                                theme={selectThemeColors}
+                                name="brand"
+                                options={brandOptions}
+                                value={product.brand}
+                                onChange={handleSelectProductBrand}
+                            />
+                            {product.brandError && <FormFeedback>{product.brandError}</FormFeedback>}
+                        </FormGroup>
+                    </Col>
+                </Row>
+
+                <hr/>
+
+                <h2 className="mb-1">Satuan</h2>
+                <Row>
+                    {/*<Col md={4}>*/}
+                    {/*    <FormGroup>*/}
+                    {/*        <Label>Multiplier</Label>*/}
+                    {/*        <Input disabled value={1}/>*/}
+                    {/*    </FormGroup>*/}
+                    {/*</Col>*/}
+                    <Col>
+                        <FormGroup>
+                            <Label>Satuan 1</Label>
+                            <Select
+                                className={classnames('react-select', {'is-invalid': unit.unitError})}
                                 placeholder="Pilih satuan"
                                 classNamePrefix='select'
                                 theme={selectThemeColors}
-                                name={`unit${index}`}
+                                name="unit"
                                 options={unitOptions}
-                                value={item.unit}
-                                onChange={handleSelectSubUnit(index)}
+                                value={unit.unit}
+                                onChange={handleSelectUnit}
                             />
-                            {item.unitError && <FormFeedback>{item.unitError}</FormFeedback>}
+                            {unit.unitError && <FormFeedback>{unit.unitError}</FormFeedback>}
                         </FormGroup>
                     </Col>
-                    <FormGroup>
-                        <Button color="danger" outline className="mr-1 mt-2" onClick={removeSubUnit(index)}>
-                            <X size={14}/>
-                        </Button>
-                    </FormGroup>
+                    {/*<FormGroup>*/}
+                    {/*    <Button outline className="mr-1 mt-2" color="primary" onClick={addSubUnit}>*/}
+                    {/*        <Plus size={14}/>*/}
+                    {/*    </Button>*/}
+                    {/*</FormGroup>*/}
                 </Row>
-            ))}
 
-            {units.length === 2 && <p className="text-warning">Maksimal 3 satuan</p>}
+                {units.map((item, index) => (
+                    <Row key={index}>
+                        <Col md={4}>
+                            <FormGroup>
+                                <Label>Multiplier</Label>
+                                <CurrencyInput
+                                    className={classnames('form-control', {'is-invalid': item.multiplierError})}
+                                    // className="form-control"
+                                    name="price"
+                                    placeholder="10"
+                                    defaultValue={1000}
+                                    decimalsLimit={2}
+                                    groupSeparator={"."}
+                                    decimalSeparator={","}
+                                    value={item.multiplier}
+                                    onValueChange={handleOnChangeSubUnitMultiplier(index)}
+                                />
+                                {/*<Input*/}
+                                {/*    id={`multiplierUnit${index}`}*/}
+                                {/*    name={`multiplierUnit${index}`}*/}
+                                {/*    onChange={handleOnChangeSubUnitMultiplier(index)}*/}
+                                {/*    value={item.multiplier}*/}
+                                {/*    placeholder="1"*/}
+                                {/*    type="number"*/}
+                                {/*    className={classnames({'is-invalid': item.multiplierError})}*/}
+                                {/*/>*/}
+                                {item.multiplierError && <FormFeedback>{item.multiplierError}</FormFeedback>}
+                            </FormGroup>
+                        </Col>
+                        <Col>
+                            <FormGroup>
+                                <Label>Satuan {index + 2}</Label>
+                                <Select
+                                    isClearable
+                                    className={classnames('react-select', {'is-invalid': item.unitError})}
+                                    placeholder="Pilih satuan"
+                                    classNamePrefix='select'
+                                    theme={selectThemeColors}
+                                    name={`unit${index}`}
+                                    options={unitOptions}
+                                    value={item.unit}
+                                    onChange={handleSelectSubUnit(index)}
+                                />
+                                {item.unitError && <FormFeedback>{item.unitError}</FormFeedback>}
+                            </FormGroup>
+                        </Col>
+                        <FormGroup>
+                            <Button color="danger" outline className="mr-1 mt-2" onClick={removeSubUnit(index)}>
+                                <X size={14}/>
+                            </Button>
+                        </FormGroup>
+                    </Row>
+                ))}
 
-            <Button color="primary" onClick={addSubUnit} outline>Tambah satuan</Button>
+                {units.length === 2 && <p className="text-warning">Maksimal 3 satuan</p>}
 
-            <hr/>
+                <Button color="primary" onClick={addSubUnit} outline>Tambah satuan</Button>
 
-            <FormGroup className="d-flex justify-content-end">
-                <Button color="primary" className="mr-1" onClick={createProduct}>Simpan</Button>
-                <Button color="primary" outline onClick={resetForm}>Reset</Button>
-            </FormGroup>
+                <hr/>
+            </ModalBody>
+
+
+            <ModalFooter>
+                <FormGroup className="d-flex justify-content-end">
+                    <Button color="primary" className="mr-1" onClick={createProduct}>Simpan</Button>
+                    <Button color="primary" outline onClick={resetForm}>Reset</Button>
+                </FormGroup>
+            </ModalFooter>
 
         </Fragment>
     )

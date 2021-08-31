@@ -4,14 +4,15 @@ import {Button, Modal, ModalHeader, ModalBody, ModalFooter} from 'reactstrap'
 import TabAddProduct from "./TabAddProduct";
 import classnames from "classnames";
 import ProductGeneralInformation from "./ProductGeneralInformation";
+import {Product} from "../../../models/Product";
 
 interface ModalAddProductProps {
+    product: Product
     isOpen: boolean
     modalToggle: () => void
     headerToggle: () => void
     onClick: () => void
     onClose: () => void
-    onSuccess: () => void
 }
 
 /**
@@ -35,7 +36,7 @@ interface ModalAddProductProps {
  *
  *
  */
-const ModalAddProduct = ({isOpen, modalToggle, headerToggle, onClick, onClose, onSuccess}: ModalAddProductProps) => {
+const ModalUpdateProduct = ({product, isOpen, modalToggle, headerToggle, onClick, onClose}: ModalAddProductProps) => {
 
 
     return (
@@ -46,9 +47,15 @@ const ModalAddProduct = ({isOpen, modalToggle, headerToggle, onClick, onClose, o
             isOpen={isOpen}
             toggle={modalToggle}
         >
-            <ModalHeader toggle={headerToggle}>Tambah Produk</ModalHeader>
+            <ModalHeader toggle={headerToggle}>Edit Produk</ModalHeader>
 
-            <ProductGeneralInformation onSuccess={onSuccess}/>
+            <ModalBody>
+                <p>{product.name}</p>
+                <p>{product.code}</p>
+                <p>{product.category.name}</p>
+                <p>{product.brand.name}</p>
+            </ModalBody>
+
             {/*<ModalFooter>*/}
             {/*    <Button color='primary' onClick={() => {*/}
             {/*        onClose()*/}
@@ -60,4 +67,4 @@ const ModalAddProduct = ({isOpen, modalToggle, headerToggle, onClick, onClose, o
     )
 }
 
-export default ModalAddProduct
+export default ModalUpdateProduct

@@ -6,7 +6,7 @@ import {columns} from './columns'
 import {useDispatch, useSelector} from 'react-redux'
 // ** Third Party Components
 import ReactPaginate from 'react-paginate'
-import {ChevronDown} from 'react-feather'
+import {Archive, ChevronDown, FileText, Trash2} from 'react-feather'
 import DataTable from 'react-data-table-component'
 // @ts-ignore
 import {selectThemeColors} from '@utils'
@@ -14,80 +14,21 @@ import {Card, Input, Row, Col, Label, CustomInput, Button, Spinner} from 'reacts
 // ** Styles
 import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/tables/react-dataTable-component.scss'
-import {Page} from "../../../models/page";
+import {Page} from "../../../models/Page";
 import {useHotkeys} from "react-hotkeys-hook";
 import {RootState} from "../../../redux/states/root";
-import {setProducts} from "../../../redux/actions/product";
+import {setPageOfProduct} from "../../../redux/actions/product";
 import {productApiService} from "../../../apiservice/product";
 import {Product} from "../../../models/Product";
 import ModalAddProduct from "./ModalAddProduct";
 import {Item, Menu, useContextMenu} from "react-contexify";
+import {notifySuccess} from "../../component/SuccessToast";
+import 'react-contexify/dist/ReactContexify.min.css'
+import '@styles/react/libs/context-menu/context-menu.scss'
+import ModalUpdateProduct from "./ModalUpdateProduct";
+import TablePagination from "../../component/TablePagination";
+import ProductTableHeader from "./ProductTableHeader";
 
-
-interface CustomHeaderProps {
-    toggleSidebar: any
-    handlePerPage: any
-    rowsPerPage: any
-    handleFilter: any
-    searchTerm: any
-    innerRef?: any
-}
-
-// ** Table Header
-const CustomHeader = (props: CustomHeaderProps) => {
-
-    const {toggleSidebar, handlePerPage, rowsPerPage, handleFilter, searchTerm, innerRef} = props
-
-    return (
-        <div className='invoice-list-table-header w-100 mr-1 ml-50 mt-2 mb-75'>
-            <Row>
-                <Col xl='6' className='d-flex align-items-center p-0'>
-                    <div className='d-flex align-items-center w-100'>
-                        <Label for='rows-per-page'>Show</Label>
-                        <CustomInput
-                            className='form-control mx-50'
-                            type='select'
-                            id='rows-per-page'
-                            value={rowsPerPage}
-                            onChange={handlePerPage}
-                            style={{
-                                width: '5rem',
-                                padding: '0 0.8rem',
-                                backgroundPosition: 'calc(100% - 3px) 11px, calc(100% - 20px) 13px, 100% 0'
-                            }}
-                        >
-                            <option value='10'>10</option>
-                            <option value='25'>25</option>
-                            <option value='50'>50</option>
-                        </CustomInput>
-                        <Label for='rows-per-page'>Entries</Label>
-                    </div>
-                </Col>
-                <Col
-                    xl='6'
-                    className='d-flex align-items-sm-center justify-content-lg-end justify-content-start flex-lg-nowrap flex-wrap flex-sm-row flex-column pr-lg-1 p-0 mt-lg-0 mt-1'
-                >
-                    <div className='d-flex align-items-center mb-sm-0 mb-1 mr-1'>
-                        <Label className='mb-0' for='search-invoice'>
-                            Search:
-                        </Label>
-                        <Input
-                            innerRef={innerRef}
-                            id='search-invoice'
-                            className='ml-50 w-100'
-                            type='text'
-                            value={searchTerm}
-                            onChange={e => handleFilter(e.target.value)}
-                        />
-                    </div>
-                    <Button color='primary' onClick={toggleSidebar}>
-                        Tambah Produk
-                    </Button>
-                </Col>
-            </Row>
-        </div>
-    )
-}
 
 const ProductsList = () => {
     const searchTermInputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null)
@@ -98,25 +39,37 @@ const ProductsList = () => {
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(0)
     const [rowsPerPage, setRowsPerPage] = useState(10)
-    const [sort, setSort] = useState<string | null>(null)
+    const [sort, setSort] = useState<string | null>("createdDate,asc")
     const [timer, setTimer] = useState<any>(null)
     const [isLoadingTable, setIsLoadingTable] = useState(true)
-    const [scrollInnerModal, setScrollInnerModal] = useState(false)
+    const [isModalAddProductVisible, setIsModalAddProductVisible] = useState(false)
+    const [isModalUpdateProductVisible, setIsModalUpdateProductVisible] = useState(false)
+    const [productToUpdate, setProductToUpdate] = useState<Product>({
+        id: '',
+        name: '',
+        category: {id: '', name: ''},
+        brand: {id: '', name: ''},
+        code: '',
+        unitConversions: [],
+        units: []
+    })
+
+
     const pageOfProduct: Page<Product> = useSelector<RootState, Page<Product>>(state => state.product.products)
 
     useHotkeys("ctrl+shift+s", () => {
         searchTermInputRef?.current?.focus()
     });
     useHotkeys("ctrl+b", () => {
-        setScrollInnerModal(true)
+        setIsModalAddProductVisible(true)
     })
     useHotkeys("esc", () => {
-        setScrollInnerModal(false)
+        setIsModalAddProductVisible(false)
     })
 
     // ** Get data on mount
     useEffect(() => {
-        getInitialData()
+        initialLoadData()
 
         console.log("mount")
 
@@ -124,7 +77,7 @@ const ProductsList = () => {
     }, [])
 
     // ** Function in get data
-    const getInitialData = () => {
+    const initialLoadData = () => {
         productApiService.getProducts({
             page: 0,
             size: rowsPerPage,
@@ -132,7 +85,7 @@ const ProductsList = () => {
             sort: sort
         })
             .then(response => {
-                dispatch(setProducts(response.data.data))
+                dispatch(setPageOfProduct(response.data.data))
                 setIsLoadingTable(false)
             })
             .catch(error => {
@@ -151,7 +104,7 @@ const ProductsList = () => {
             sort: sort
         })
             .then((response) => {
-                dispatch(setProducts(response.data.data))
+                dispatch(setPageOfProduct(response.data.data))
             })
             .catch((error) => {
                 console.log(error?.response?.data)
@@ -174,21 +127,12 @@ const ProductsList = () => {
             sort: sort
         })
             .then(response => {
-                dispatch(setProducts(response.data.data))
+                dispatch(setPageOfProduct(response.data.data))
             })
             .catch(error => {
                 console.log(error?.response?.data)
             })
     }
-
-    // const debounce = (job: () => void, delay: number) => {
-    //     return () => {
-    //         clearTimeout(timer)
-    //         setTimer(
-    //             setTimeout(() => job(), delay)
-    //         )
-    //     }
-    // }
 
     // ** Function in get data on search query change
     const handleFilter = val => {
@@ -197,41 +141,18 @@ const ProductsList = () => {
 
         productApiService.getProducts({
             page: currentPage,
-            size: currentPage * rowsPerPage,
+            size: rowsPerPage,
             name: val,
             sort: sort
         })
             .then((response) => {
 
-                dispatch(setProducts(response.data.data))
+                dispatch(setPageOfProduct(response.data.data))
 
             })
             .catch((error) => {
                 console.log(error?.response?.data)
             })
-    }
-
-    // ** Custom Pagination
-    const CustomPagination = () => {
-        return (
-            <ReactPaginate
-                previousLabel={''}
-                nextLabel={''}
-                pageCount={pageOfProduct.totalPages || 1}
-                activeClassName='active'
-                forcePage={currentPage !== 0 ? currentPage - 1 : 0}
-                onPageChange={page => handlePagination(page)}
-                pageClassName={'page-item'}
-                nextLinkClassName={'page-link'}
-                nextClassName={'page-item next'}
-                previousClassName={'page-item prev'}
-                previousLinkClassName={'page-link'}
-                pageLinkClassName={'page-link'}
-                containerClassName={'pagination react-paginate justify-content-end my-2 pr-1'}
-                marginPagesDisplayed={0}
-                pageRangeDisplayed={10}
-            />
-        )
     }
 
     // ** Table data to render
@@ -242,15 +163,47 @@ const ProductsList = () => {
         }))
     }
 
+    const {show} = useContextMenu({
+        id: 'menu_id'
+    })
+
+    const handleClick = text => {
+        notifySuccess(text)
+    }
+
     return (
         <Fragment>
             <ModalAddProduct
-                isOpen={scrollInnerModal}
-                modalToggle={() => setScrollInnerModal(!scrollInnerModal)}
-                headerToggle={() => setScrollInnerModal(!scrollInnerModal)}
-                onClick={() => setScrollInnerModal(!scrollInnerModal)}/>
+                isOpen={isModalAddProductVisible}
+                modalToggle={() => setIsModalAddProductVisible(!isModalAddProductVisible)}
+                headerToggle={() => setIsModalAddProductVisible(!isModalAddProductVisible)}
+                onClick={() => setIsModalAddProductVisible(!isModalAddProductVisible)}
+                onClose={() => {
+                    setIsModalAddProductVisible(false)
+                    initialLoadData()
+                }}
+                onSuccess={() => {
+                    setIsModalAddProductVisible(false)
+                    initialLoadData()
+                }}
+            />
+            <ModalUpdateProduct
+                product={productToUpdate}
+                isOpen={isModalUpdateProductVisible}
+                modalToggle={() => setIsModalUpdateProductVisible(!isModalUpdateProductVisible)}
+                headerToggle={() => setIsModalUpdateProductVisible(!isModalUpdateProductVisible)}
+                onClick={() => setIsModalUpdateProductVisible(!isModalUpdateProductVisible)}
+                onClose={() => {
+                    setIsModalUpdateProductVisible(false)
+                    initialLoadData()
+                }}
+            />
             <Card>
                 <DataTable
+                    onRowClicked={(row, event) => {
+                        setProductToUpdate(row)
+                        show(event)
+                    }}
                     noHeader
                     pagination
                     subHeader
@@ -266,24 +219,16 @@ const ProductsList = () => {
                         }
                     })}
                     progressPending={isLoadingTable}
-                    // progressComponent={
-                    //     <Row className='d-flex justify-content-center my-1 pa-2'>
-                    //
-                    //         <Spinner color="primary" className="mr-1"/>
-                    //         <h3>Loading...</h3>
-                    //
-                    //     </Row>
-                    // }
                     highlightOnHover
                     sortIcon={<ChevronDown/>}
                     className='react-dataTable'
-                    paginationComponent={CustomPagination}
+                    paginationComponent={() => TablePagination(pageOfProduct, currentPage, handlePagination)}
                     data={dataToRender()}
                     subHeaderComponent={
-                        <CustomHeader
+                        <ProductTableHeader
                             innerRef={searchTermInputRef}
-                            toggleSidebar={() => {
-                                setScrollInnerModal(true)
+                            toggleModal={() => {
+                                setIsModalAddProductVisible(true)
                             }}
                             handlePerPage={handlePerPage}
                             rowsPerPage={rowsPerPage}
@@ -292,6 +237,24 @@ const ProductsList = () => {
                         />
                     }
                 />
+
+                <Menu id='menu_id'>
+                    <Item onClick={() => handleClick('Option 1')}>
+                        <FileText size={14} className='mr-50'/>
+                        <span className='align-middle'>Details</span></Item>
+                    <Item
+                        onClick={() => {
+                            setIsModalUpdateProductVisible(true)
+                        }}>
+                        <Archive size={14} className='mr-50'/>
+                        <span className='align-middle'>Edit</span>
+                    </Item>
+                    <Item onClick={() => handleClick('Option 2')}>
+                        <Trash2 size={14} className='mr-50'/>
+                        <span className='align-middle'>Delete</span>
+                    </Item>
+                </Menu>
+
             </Card>
         </Fragment>
     )

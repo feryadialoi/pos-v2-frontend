@@ -53,7 +53,7 @@ const TabAddProduct = () => {
             </Nav>
             <TabContent className='py-50' activeTab={active}>
                 <TabPane tabId='1'>
-                    <ProductGeneralInformation/>
+                    <ProductGeneralInformation onSuccess={() => {}}/>
                 </TabPane>
                 <TabPane tabId='2'>
                     <SaleAddProduct/>

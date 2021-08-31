@@ -14,7 +14,7 @@ const SaleAddProduct = () => {
         {
             isUseInSale: false,
             unit: {
-                id: 1,
+                id: "1",
                 name: "Dus"
             },
             price: "80000"
@@ -22,7 +22,7 @@ const SaleAddProduct = () => {
         {
             isUseInSale: false,
             unit: {
-                id: 2,
+                id: "2",
                 name: "Kotak"
             },
             price: "10000"
@@ -30,7 +30,7 @@ const SaleAddProduct = () => {
         {
             isUseInSale: false,
             unit: {
-                id: 3,
+                id: "3",
                 name: "Pcs"
             },
             price: "1000"

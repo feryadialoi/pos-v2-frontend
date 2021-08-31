@@ -11,41 +11,52 @@ import {
     Eye,
     Delete
 } from 'react-feather'
-import {Button} from "reactstrap";
+import {Button, DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown} from "reactstrap";
 import {Product} from "../../../models/Product";
 import {IDataTableColumn} from "react-data-table-component";
+import {Link} from "react-router-dom";
+
 
 const renderAction = (row, actions?: DataTableColumnActions) => {
     return (
-        <div className="d-flex">
-            <Button onClick={() => {
-                if (actions?.onClickView) {
-                    actions?.onClickView(row)
-                }
+        <UncontrolledDropdown>
+            <DropdownToggle tag='div' className='btn btn-sm'>
+                <MoreVertical size={14} className='cursor-pointer'/>
+            </DropdownToggle>
+            <DropdownMenu right>
+                <DropdownItem
+                    tag={Link}
+                    to={`/apps/user/view/${row.id}`}
+                    className='w-100'
+                    onClick={() => {
+                    }}
+                >
+                    <FileText size={14} className='mr-50'/>
+                    <span className='align-middle'>Details</span>
+                </DropdownItem>
+                <DropdownItem
+                    tag={Link}
+                    to={`/apps/user/edit/${row.id}`}
+                    className='w-100'
+                    onClick={() => {
+                    }}
+                >
+                    <Archive size={14} className='mr-50'/>
+                    <span className='align-middle'>Edit</span>
+                </DropdownItem>
+                <DropdownItem className='w-100'
+                              onClick={() => {
+                              }}
+                >
+                    <Trash2 size={14} className='mr-50'/>
+                    <span className='align-middle'>Delete</span>
+                </DropdownItem>
+            </DropdownMenu>
+        </UncontrolledDropdown>
 
-                alert(row.id)
-            }} color='flat-primary' size="sm">
-                <span className='text-truncate text-capitalize align-middle'>
-                    <Eye size={18} className="text-primary mr-50"/>Lihat
-                </span>
-            </Button>
-            <Button onClick={() => {
-                alert("lihat")
-            }} color='flat-warning bg-darken-2' size="sm">
-                <span className='text-truncate text-capitalize align-middle'>
-                    <Edit2 size={18} className="text-warning bf-darken-2 mr-50"/>Edit
-                </span>
-            </Button>
-            <Button onClick={() => {
-                alert("lihat")
-            }} color='flat-danger' size="sm">
-                <span className='text-truncate text-capitalize align-middle'>
-                    <Delete size={18} className="text-danger mr-50"/>Hapus
-                </span>
-            </Button>
-        </div>
     )
 }
+
 
 interface DataTableColumnActions<V = any, E = any, D = any> {
     onClickView?: (data?: Product) => V
@@ -76,22 +87,18 @@ export const columns = <V, E, D>(actions?: DataTableColumnActions<V, E, D>): IDa
         cell: row => row.name
     },
     {
-        name: 'Nama Kategori',
+        name: 'Kategori',
         minWidth: '320px',
         selector: 'category',
         sortable: true,
         cell: row => row.category.name
     },
     {
-        name: "Satuan Default",
+        name: 'Merk',
         minWidth: '320px',
-        selector: '',
+        selector: 'brand',
         sortable: true,
-        cell: row => {
-            if (row.defaultUnit === "LARGE") return row.unitLarge.name
-            if (row.defaultUnit === "MEDIUM") return row.unitMedium.name
-            if (row.defaultUnit === "SMALL") return row.unitSmall.name
-        }
+        cell: row => row.brand.name
     },
     {
         name: 'Aksi',
