@@ -2,80 +2,22 @@ import {Fragment, useEffect, useRef, useState} from "react";
 import {Button, Card, Col, CustomInput, Input, Label, Row} from "reactstrap";
 import DataTable from 'react-data-table-component'
 import {columns} from "./columns";
-import {ChevronDown} from "react-feather";
-import ReactPaginate from "react-paginate";
+import {Archive, ChevronDown, FileText, Trash2} from "react-feather";
 import {useDispatch, useSelector} from "react-redux";
-import {Page} from "../../../models/page";
+import {Page} from "../../../models/Page";
 import {RootState} from "../../../redux/states/root";
 import {Warehouse} from "../../../models/Warehouse";
 import {warehouseApiService} from "../../../apiservice/warehouse";
-import {setWarehouses} from "../../../redux/actions/warehouse";
+import {setPageOfWarehouse} from "../../../redux/actions/warehouse";
 import {useHotkeys} from "react-hotkeys-hook";
-
-
-interface CustomHeaderProps {
-    toggleSidebar: any
-    handlePerPage: any
-    rowsPerPage: any
-    handleFilter: any
-    searchTerm: any
-    innerRef?: any
-}
-
-const CustomHeader = (props: CustomHeaderProps) => {
-    const {toggleSidebar, handlePerPage, rowsPerPage, handleFilter, searchTerm, innerRef} = props
-
-    return (
-        <div className=' invoice-list-table-header w-100 mr-1 ml-50 mt-2 mb-75'>
-            <Row>
-                <Col xl='6' className='d-flex align-items-center p-0'>
-                    <div className='d-flex align-items-center w-100'>
-                        <Label for='rows-per-page'>Show</Label>
-                        <CustomInput
-                            className='form-control mx-50'
-                            type='select'
-                            id='rows-per-page'
-                            value={rowsPerPage}
-                            onChange={handlePerPage}
-                            style={{
-                                width: '5rem',
-                                padding: '0 0.8rem',
-                                backgroundPosition: 'calc(100% - 3px) 11px, calc(100% - 20px) 13px, 100% 0'
-                            }}
-                        >
-                            <option value='10'>10</option>
-                            <option value='25'>25</option>
-                            <option value='50'>50</option>
-                        </CustomInput>
-                        <Label for='rows-per-page'>Entries</Label>
-                    </div>
-                </Col>
-                <Col
-                    xl='6'
-                    className='d-flex align-items-sm-center justify-content-lg-end justify-content-start flex-lg-nowrap flex-wrap flex-sm-row flex-column pr-lg-1 p-0 mt-lg-0 mt-1'
-                >
-                    <div className='d-flex align-items-center mb-sm-0 mb-1 mr-1'>
-                        <Label className='mb-0' for='search-invoice'>
-                            Search:
-                        </Label>
-                        <Input
-                            innerRef={innerRef}
-                            id='search-invoice'
-                            className='ml-50 w-100'
-                            type='text'
-                            value={searchTerm}
-                            onChange={e => handleFilter(e.target.value)}
-                        />
-                    </div>
-                    <Button color='primary' onClick={toggleSidebar}>
-                        Tambah Gudang
-                    </Button>
-                </Col>
-            </Row>
-        </div>
-    )
-}
-
+import ModalAddWarehouse from "./ModalAddWarehouse";
+import {Item, Menu, useContextMenu} from "react-contexify";
+import {notifySuccess} from "../../component/SuccessToast";
+import 'react-contexify/dist/ReactContexify.min.css'
+import '@styles/react/libs/context-menu/context-menu.scss'
+import ModalUpdateWarehouse from "./ModalUpdateWarehouse";
+import WarehouseTableHeader from "./WarehouseTableHeader";
+import TablePagination from "../../component/TablePagination";
 
 const WarehousesList = () => {
     const searchTermInputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null)
@@ -84,8 +26,15 @@ const WarehousesList = () => {
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(0)
     const [rowsPerPage, setRowsPerPage] = useState(10)
-    const [sort, setSort] = useState<string | null>(null)
-    const [sidebarOpen, setSidebarOpen] = useState(false)
+    const [sort, setSort] = useState<string | null>("createdDate,asc")
+    const [warehouseToUpdate, setWarehouseToUpdate] = useState<Warehouse>({
+        id: '',
+        name: '',
+        address: '',
+    })
+
+    const [isModalAddWarehouseVisible, setIsModalAddWarehouseVisible] = useState(false)
+    const [isModalUpdateWarehouseVisible, setIsModalUpdateWarehouseVisible] = useState(false)
 
     const pageOfWarehouse: Page<Warehouse> = useSelector<RootState, Page<Warehouse>>(state => state.warehouse.pageOfWarehouse)
 
@@ -93,16 +42,17 @@ const WarehousesList = () => {
         searchTermInputRef?.current?.focus()
     });
     useHotkeys("ctrl+b", () => {
-        setSidebarOpen(true)
+
     })
     useHotkeys("esc", () => {
-        setSidebarOpen(false)
+
     })
 
 
-    const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
+    const toggleModalAddWarehouse = () => setIsModalAddWarehouseVisible(!isModalAddWarehouseVisible)
 
-    useEffect(() => {
+
+    const initialLoadData = () => {
         warehouseApiService.getWarehouses({
             page: 0,
             size: rowsPerPage,
@@ -111,11 +61,15 @@ const WarehousesList = () => {
         })
             .then(response => {
                 console.log(response.data.data)
-                dispatch(setWarehouses(response.data.data))
+                dispatch(setPageOfWarehouse(response.data.data))
             })
             .catch(error => {
                 console.log(error?.response?.data)
             })
+    }
+
+    useEffect(() => {
+        initialLoadData()
     }, [])
 
     const handlePagination = page => {
@@ -128,7 +82,7 @@ const WarehousesList = () => {
         })
             .then(response => {
                 console.log(response.data.data)
-                dispatch(setWarehouses(response.data.data))
+                dispatch(setPageOfWarehouse(response.data.data))
             })
             .catch(error => {
                 console.log(error?.response?.data)
@@ -147,7 +101,7 @@ const WarehousesList = () => {
         })
             .then(response => {
                 console.log(response.data.data)
-                dispatch(setWarehouses(response.data.data))
+                dispatch(setPageOfWarehouse(response.data.data))
             })
             .catch(error => {
                 console.log(error?.response?.data)
@@ -164,34 +118,11 @@ const WarehousesList = () => {
         })
             .then(response => {
                 console.log(response.data.data)
-                dispatch(setWarehouses(response.data.data))
+                dispatch(setPageOfWarehouse(response.data.data))
             })
             .catch(error => {
                 console.log(error?.response?.data)
             })
-    }
-
-
-    const CustomPagination = () => {
-        return (
-            <ReactPaginate
-                previousLabel={''}
-                nextLabel={''}
-                pageCount={pageOfWarehouse.totalPages || 1}
-                activeClassName='active'
-                forcePage={currentPage !== 0 ? currentPage - 1 : 0}
-                onPageChange={page => handlePagination(page)}
-                pageClassName={'page-item'}
-                nextLinkClassName={'page-link'}
-                nextClassName={'page-item next'}
-                previousClassName={'page-item prev'}
-                previousLinkClassName={'page-link'}
-                pageLinkClassName={'page-link'}
-                containerClassName={'pagination react-paginate justify-content-end my-2 pr-1'}
-                marginPagesDisplayed={0}
-                pageRangeDisplayed={10}
-            />
-        )
     }
 
     const dataToRender = () => {
@@ -201,11 +132,53 @@ const WarehousesList = () => {
         }))
     }
 
+    const {show} = useContextMenu({
+        id: 'menu_id'
+    })
+
+    const handleClick = text => {
+        notifySuccess(text)
+    }
 
     return (
         <Fragment>
+            <ModalUpdateWarehouse
+                warehouse={warehouseToUpdate}
+                isOpen={isModalUpdateWarehouseVisible}
+                modalToggle={() => setIsModalUpdateWarehouseVisible(!isModalUpdateWarehouseVisible)}
+                headerToggle={() => setIsModalUpdateWarehouseVisible(!isModalUpdateWarehouseVisible)}
+                onClick={() => setIsModalUpdateWarehouseVisible(!isModalUpdateWarehouseVisible)}
+                onClose={() => {
+                    setIsModalUpdateWarehouseVisible(false)
+                }}
+                onSuccess={() => {
+                    setIsModalUpdateWarehouseVisible(false)
+                    initialLoadData()
+                }}
+            />
+            <ModalAddWarehouse
+                isOpen={isModalAddWarehouseVisible}
+                modalToggle={() => setIsModalAddWarehouseVisible(!isModalAddWarehouseVisible)}
+                headerToggle={() => setIsModalAddWarehouseVisible(!isModalAddWarehouseVisible)}
+                onClick={() => setIsModalAddWarehouseVisible(!isModalAddWarehouseVisible)}
+                onClose={() => {
+                    setIsModalAddWarehouseVisible(false)
+                }}
+                onSuccess={() => {
+                    setIsModalAddWarehouseVisible(false)
+                    initialLoadData()
+                }}
+            />
             <Card>
                 <DataTable
+                    onRowClicked={(row, event) => {
+                        setWarehouseToUpdate({
+                            id: row.id,
+                            name: row.name,
+                            address: row.address
+                        })
+                        show(event)
+                    }}
                     highlightOnHover
                     noHeader
                     pagination
@@ -215,12 +188,12 @@ const WarehousesList = () => {
                     columns={columns}
                     sortIcon={<ChevronDown/>}
                     className='react-dataTable'
-                    paginationComponent={CustomPagination}
+                    paginationComponent={() => TablePagination(pageOfWarehouse, currentPage, handlePagination)}
                     data={dataToRender()}
                     subHeaderComponent={
-                        <CustomHeader
+                        <WarehouseTableHeader
                             innerRef={searchTermInputRef}
-                            toggleSidebar={toggleSidebar}
+                            toggleModal={toggleModalAddWarehouse}
                             handlePerPage={handlePerPage}
                             rowsPerPage={rowsPerPage}
                             searchTerm={searchTerm}
@@ -228,6 +201,25 @@ const WarehousesList = () => {
                         />
                     }
                 />
+
+                <Menu id='menu_id'>
+                    <Item onClick={() => handleClick('Option 1')}>
+                        <FileText size={14} className='mr-50'/>
+                        <span className='align-middle'>Details</span></Item>
+                    <Item
+                        onClick={() => {
+                            setIsModalUpdateWarehouseVisible(true)
+                        }}>
+                        <Archive size={14} className='mr-50'/>
+                        <span className='align-middle'>Edit</span>
+                    </Item>
+                    <Item onClick={() => handleClick('Option 2')}>
+                        <Trash2 size={14} className='mr-50'/>
+                        <span className='align-middle'>Delete</span>
+                    </Item>
+                </Menu>
+
+
             </Card>
         </Fragment>
     )
