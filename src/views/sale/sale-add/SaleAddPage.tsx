@@ -1,17 +1,16 @@
 import {Fragment} from "react";
 import {Card, CardHeader, CardTitle} from "reactstrap";
 
-
-const StockAdjustmentPage = () => {
+const SaleAddPage = () => {
     return (
         <Fragment>
             <Card>
                 <CardHeader>
-                    <CardTitle>Penyesuaian Stok</CardTitle>
+                    <CardTitle>Tambah Penjualan</CardTitle>
                 </CardHeader>
             </Card>
         </Fragment>
     )
 }
 
-export default StockAdjustmentPage
+export default SaleAddPage
