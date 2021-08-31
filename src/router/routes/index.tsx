@@ -6,6 +6,7 @@ import Sale from "./Sale";
 import Purchase from "./Purchase";
 import ReportRoutes from "./Report";
 import WarehouseRoutes from "./Warehouse";
+import SettingRoutes from "./Setting";
 
 
 export interface AppRouteMeta {
@@ -13,6 +14,7 @@ export interface AppRouteMeta {
 }
 
 export interface AppRoute {
+    exact?: boolean;
     path: string;
     component: ReactNode;
     layout?: string;
@@ -80,7 +82,8 @@ const Routes: AppRoute[] = [
             authRoute: true
         }
     },
-    ...ReportRoutes
+    ...ReportRoutes,
+    ...SettingRoutes,
 ]
 
 export {DefaultRoute, TemplateTitle, Routes}
