@@ -1,8 +1,11 @@
 import {Modal, ModalBody, ModalHeader} from "reactstrap";
 import classnames from "classnames";
 import AddSupplierForm from "./AddSupplierForm";
+import UpdateSupplierForm from "./UpdateSupplierForm";
+import {Supplier} from "../../../models/Supplier";
 
 interface ModalAddSupplierProps {
+    supplier: Supplier
     isOpen: boolean
     modalToggle: () => void
     headerToggle: () => void
@@ -10,7 +13,7 @@ interface ModalAddSupplierProps {
     onSuccess: () => void
 }
 
-const ModalAddSupplier = ({isOpen, modalToggle, headerToggle, onClick, onSuccess}: ModalAddSupplierProps) => {
+const ModalAddSupplier = ({supplier, isOpen, modalToggle, headerToggle, onClick, onSuccess}: ModalAddSupplierProps) => {
     return (
         <Modal
             autoFocus={false}
@@ -21,7 +24,7 @@ const ModalAddSupplier = ({isOpen, modalToggle, headerToggle, onClick, onSuccess
         >
             <ModalHeader toggle={headerToggle}>Tambah Supplier</ModalHeader>
 
-            <AddSupplierForm onSuccess={onSuccess}/>
+            <UpdateSupplierForm supplier={supplier} onSuccess={onSuccess}/>
 
             {/*<ModalFooter>*/}
             {/*    <Button color='primary' onClick={onClick}>*/}

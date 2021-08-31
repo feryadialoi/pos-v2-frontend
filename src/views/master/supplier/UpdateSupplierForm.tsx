@@ -19,12 +19,14 @@ import * as yup from "yup";
 import {yupResolver} from "@hookform/resolvers/yup";
 import {supplierApiService} from "../../../apiservice/supplier";
 import {notifySuccess} from "../../component/SuccessToast";
+import {Supplier} from "../../../models/Supplier";
 
 interface AddSupplierFormProps {
+    supplier: Supplier
     onSuccess: () => void
 }
 
-const AddSupplierForm = ({onSuccess}: AddSupplierFormProps) => {
+const AddSupplierForm = ({supplier, onSuccess}: AddSupplierFormProps) => {
     const SignupSchema = yup.object().shape({
         name: yup.string().required("Nama belum diisi"),
         address: yup.string().required("Alamat belum diisi"),
@@ -44,7 +46,7 @@ const AddSupplierForm = ({onSuccess}: AddSupplierFormProps) => {
     const onSubmit = (data) => {
         console.log(data)
 
-        supplierApiService.createSupplier({
+        supplierApiService.updateSupplier(supplier.id, {
             name: data.name,
             address: data.address,
 
@@ -94,6 +96,7 @@ const AddSupplierForm = ({onSuccess}: AddSupplierFormProps) => {
                             autoFocus={true}
                             id="name"
                             name="name"
+                            defaultValue={supplier.name}
                             placeholder="Nama"
                             innerRef={register({required: true})}
                             className={classnames({'is-invalid': errors['name']})}
@@ -105,6 +108,7 @@ const AddSupplierForm = ({onSuccess}: AddSupplierFormProps) => {
                         <Input
                             id="address"
                             name="address"
+                            defaultValue={supplier.address}
                             type="textarea"
                             rows={3}
                             placeholder="Alamat"
@@ -123,6 +127,7 @@ const AddSupplierForm = ({onSuccess}: AddSupplierFormProps) => {
                                 <Input
                                     id="pic"
                                     name="pic"
+                                    defaultValue={supplier.pic}
                                     placeholder="PIC"
                                     innerRef={register({required: true})}
                                     className={classnames({'is-invalid': errors['pic']})}
@@ -136,6 +141,7 @@ const AddSupplierForm = ({onSuccess}: AddSupplierFormProps) => {
                                 <Input
                                     id="phone"
                                     name="phone"
+                                    defaultValue={supplier.phone}
                                     placeholder="081234567890"
                                     innerRef={register({required: true})}
                                     className={classnames({'is-invalid': errors['phone']})}
@@ -149,6 +155,7 @@ const AddSupplierForm = ({onSuccess}: AddSupplierFormProps) => {
                                 <Input
                                     id="email"
                                     name="email"
+                                    defaultValue={supplier.email}
                                     placeholder="Email"
                                     innerRef={register({required: true})}
                                     className={classnames({'is-invalid': errors['email']})}
@@ -167,6 +174,7 @@ const AddSupplierForm = ({onSuccess}: AddSupplierFormProps) => {
                                 <Input
                                     id="bankName"
                                     name="bankName"
+                                    defaultValue={supplier.bankName}
                                     placeholder="Nama Bank"
                                     innerRef={register({required: true})}
                                     className={classnames({'is-invalid': errors['bankName']})}
@@ -181,6 +189,7 @@ const AddSupplierForm = ({onSuccess}: AddSupplierFormProps) => {
                                 <Input
                                     id="bankBranch"
                                     name="bankBranch"
+                                    defaultValue={supplier.bankBranch}
                                     placeholder="Cabang Bank"
                                     innerRef={register({required: true})}
                                     className={classnames({'is-invalid': errors['bankBranch']})}
@@ -195,6 +204,7 @@ const AddSupplierForm = ({onSuccess}: AddSupplierFormProps) => {
                                 <Input
                                     id="bankAccountNumber"
                                     name="bankAccountNumber"
+                                    defaultValue={supplier.bankAccountNumber}
                                     placeholder="Nomor Rekening"
                                     innerRef={register({required: true})}
                                     className={classnames({'is-invalid': errors['bankAccountNumber']})}
@@ -211,11 +221,13 @@ const AddSupplierForm = ({onSuccess}: AddSupplierFormProps) => {
                         <Col>
                             <FormGroup>
                                 <Label for="taxIdentificationNumber">NPWP</Label>
-                                <Input id="taxIdentificationNumber"
-                                       name="taxIdentificationNumber"
-                                       placeholder="NPWP"
-                                       innerRef={register({required: true})}
-                                       className={classnames({'is-invalid': errors['taxIdentificationNumber']})}
+                                <Input
+                                    id="taxIdentificationNumber"
+                                    name="taxIdentificationNumber"
+                                    defaultValue={supplier.taxIdentificationNumber}
+                                    placeholder="NPWP"
+                                    innerRef={register({required: true})}
+                                    className={classnames({'is-invalid': errors['taxIdentificationNumber']})}
                                 />
                                 {errors && errors['taxIdentificationNumber'] &&
                                 <FormFeedback>{errors['taxIdentificationNumber'].message}</FormFeedback>}
@@ -227,6 +239,7 @@ const AddSupplierForm = ({onSuccess}: AddSupplierFormProps) => {
                                 <Input
                                     id="taxableFirmName"
                                     name="taxableFirmName"
+                                    defaultValue={supplier.taxableFirmName}
                                     placeholder="Nama PKP"
                                     innerRef={register({required: true})}
                                     className={classnames({'is-invalid': errors['taxableFirmName']})}
@@ -241,12 +254,13 @@ const AddSupplierForm = ({onSuccess}: AddSupplierFormProps) => {
                                 <Input
                                     id="taxableFirmAddress"
                                     name="taxableFirmAddress"
+                                    defaultValue={supplier.taxableFirmAddress}
                                     placeholder="Alamat PKP"
                                     innerRef={register({required: true})}
                                     className={classnames({'is-invalid': errors['taxableFirmAddress']})}
                                 />
-                                {errors && errors['taxableFirmAddress'] &&
-                                <FormFeedback>{errors['taxableFirmAddress'].message}</FormFeedback>}
+                                {errors && errors['taxableFirmName'] &&
+                                <FormFeedback>{errors['taxableFirmName'].message}</FormFeedback>}
                             </FormGroup>
                         </Col>
                     </Row>

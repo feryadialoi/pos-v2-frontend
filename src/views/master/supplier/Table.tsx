@@ -11,7 +11,7 @@ import {useDispatch, useSelector} from 'react-redux'
 // ** Third Party Components
 import Select from 'react-select'
 import ReactPaginate from 'react-paginate'
-import {Check, ChevronDown, Loader, X} from 'react-feather'
+import {Archive, Check, ChevronDown, FileText, Loader, Trash2, X} from 'react-feather'
 import DataTable from 'react-data-table-component'
 // @ts-ignore
 import {selectThemeColors} from '@utils'
@@ -20,85 +20,29 @@ import {Card, CardHeader, CardTitle, CardBody, Input, Row, Col, Label, CustomInp
 // ** Styles
 import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/tables/react-dataTable-component.scss'
-import {Page} from "../../../models/page";
+import {Page} from "../../../models/Page";
 import {unitApiService} from "../../../apiservice/unit";
 import {useHotkeys} from "react-hotkeys-hook";
-import {setUnits} from "../../../redux/actions/unit";
+import {setPageOfUnit} from "../../../redux/actions/unit";
 import {RootState} from "../../../redux/states/root";
 import {Product} from "../../../models/Product";
 import {Unit} from "../../../models/Unit";
 // @ts-ignore
 import Avatar from '@components/avatar'
 import {toast} from "react-toastify";
-import SuccessToast from "../../component/SuccessToast";
+import SuccessToast, {notifySuccess} from "../../component/SuccessToast";
 import ErrorToast from "../../component/ErrorToast";
 import ModalAddSupplier from "./ModalAddSupplier";
+import {Item, Menu, useContextMenu} from "react-contexify";
+import 'react-contexify/dist/ReactContexify.min.css'
+import '@styles/react/libs/context-menu/context-menu.scss'
+import ModalUpdateSupplier from "./ModalUpdateSupplier";
+import {Supplier} from "../../../models/Supplier";
+import {supplierApiService} from "../../../apiservice/supplier";
+import {setPageOfSupplier} from "../../../redux/actions/supplier";
+import TablePagination from "../../component/TablePagination";
+import SupplierTableHeader from "./SupplierTableHeader";
 
-
-interface CustomHeaderProps {
-    toggleSidebar: any
-    handlePerPage: any
-    rowsPerPage: any
-    handleFilter: any
-    searchTerm: any
-    innerRef?: any
-}
-
-// ** Table Header
-const CustomHeader = (props: CustomHeaderProps) => {
-
-    const {toggleSidebar, handlePerPage, rowsPerPage, handleFilter, searchTerm, innerRef} = props
-
-    return (
-        <div className='invoice-list-table-header w-100 mr-1 ml-50 mt-2 mb-75'>
-            <Row>
-                <Col xl='6' className='d-flex align-items-center p-0'>
-                    <div className='d-flex align-items-center w-100'>
-                        <Label for='rows-per-page'>Show</Label>
-                        <CustomInput
-                            className='form-control mx-50'
-                            type='select'
-                            id='rows-per-page'
-                            value={rowsPerPage}
-                            onChange={handlePerPage}
-                            style={{
-                                width: '5rem',
-                                padding: '0 0.8rem',
-                                backgroundPosition: 'calc(100% - 3px) 11px, calc(100% - 20px) 13px, 100% 0'
-                            }}
-                        >
-                            <option value='10'>10</option>
-                            <option value='25'>25</option>
-                            <option value='50'>50</option>
-                        </CustomInput>
-                        <Label for='rows-per-page'>Entries</Label>
-                    </div>
-                </Col>
-                <Col
-                    xl='6'
-                    className='d-flex align-items-sm-center justify-content-lg-end justify-content-start flex-lg-nowrap flex-wrap flex-sm-row flex-column pr-lg-1 p-0 mt-lg-0 mt-1'
-                >
-                    <div className='d-flex align-items-center mb-sm-0 mb-1 mr-1'>
-                        <Label className='mb-0' for='search-invoice'>
-                            Search:
-                        </Label>
-                        <Input
-                            innerRef={innerRef}
-                            id='search-invoice'
-                            className='ml-50 w-100'
-                            type='text'
-                            value={searchTerm}
-                            onChange={e => handleFilter(e.target.value)}
-                        />
-                    </div>
-                    <Button color='primary' onClick={toggleSidebar}>
-                        Tambah Supplier
-                    </Button>
-                </Col>
-            </Row>
-        </div>
-    )
-}
 
 const SuppliersList = () => {
     const searchTermInputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null)
@@ -109,12 +53,23 @@ const SuppliersList = () => {
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(0)
     const [rowsPerPage, setRowsPerPage] = useState(10)
-    const [sort, setSort] = useState<string | null>(null)
+    const [sort, setSort] = useState<string | null>("createdDate,asc")
     const [sidebarOpen, setSidebarOpen] = useState(false)
+
+    const [isModalAddSupplierVisible, setIsModalAddSupplierVisible] = useState(false)
+    const [isModalUpdateSupplierVisible, setIsModalUpdateSupplierVisible] = useState(false)
+
+    const [supplierToUpdate, setSupplierToUpdate] = useState<Supplier>({
+        id: '', code: '', name: '', address: '',
+        pic: '', phone: '', email: '',
+        bankName: '', bankBranch: '', bankAccountNumber: '',
+        taxableFirmName: '', taxableFirmAddress: '', taxIdentificationNumber: ''
+    })
+
+    const pageOfSupplier: Page<Supplier> = useSelector<RootState, Page<Supplier>>(state => state.supplier.pageOfSupplier)
 
     const [timer, setTimer] = useState<any>(null)
 
-    const pageOfUnit: Page<Unit> = useSelector<RootState, Page<Unit>>(state => state.unit.pageOfUnit)
 
     useHotkeys("ctrl+shift+s", () => {
         searchTermInputRef?.current?.focus()
@@ -130,20 +85,24 @@ const SuppliersList = () => {
     // ** Function to toggle sidebar
     const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
 
-    // ** Get data on mount
-    useEffect(() => {
-        unitApiService.getUnits({
+    const initialLoadData = () => {
+        supplierApiService.getSuppliers({
             page: 0,
             size: rowsPerPage,
             name: searchTerm,
             sort: sort
         })
             .then(response => {
-                dispatch(setUnits(response.data.data))
+                dispatch(setPageOfSupplier(response.data.data))
             })
             .catch((error) => {
                 console.log(error?.response?.data)
             })
+    }
+
+    // ** Get data on mount
+    useEffect(() => {
+        initialLoadData()
     }, [])
 
 
@@ -151,14 +110,14 @@ const SuppliersList = () => {
     const handlePagination = page => {
         setCurrentPage(page.selected + 1)
 
-        unitApiService.getUnits({
+        supplierApiService.getSuppliers({
             page: page.selected,
             size: rowsPerPage,
             name: searchTerm,
             sort: sort
         })
             .then(response => {
-                dispatch(setUnits(response.data.data))
+                dispatch(setPageOfSupplier(response.data.data))
             })
             .catch(error => {
                 console.log(error?.response?.data)
@@ -169,75 +128,41 @@ const SuppliersList = () => {
     const handlePerPage = e => {
         const value = parseInt(e.currentTarget.value)
         setRowsPerPage(value)
-        unitApiService.getUnits({
+        supplierApiService.getSuppliers({
             page: currentPage,
             size: value,
             name: searchTerm,
             sort: sort
         })
             .then(response => {
-                dispatch(setUnits(response.data.data))
+                dispatch(setPageOfSupplier(response.data.data))
             })
             .catch(error => {
                 console.log(error?.response?.data)
             })
     }
-
-    // const debounce = (job: () => void, delay: number) => {
-    //     return () => {
-    //         clearTimeout(timer)
-    //         setTimer(
-    //             setTimeout(() => job(), delay)
-    //         )
-    //     }
-    // }
-
 
     // ** Function in get data on search query change
     const handleFilter = val => {
         setSearchTerm(val)
-        unitApiService.getUnits({
+        supplierApiService.getSuppliers({
             page: currentPage,
-            size: currentPage * rowsPerPage,
+            size: rowsPerPage,
             name: val,
             sort: sort
         })
             .then(response => {
-                dispatch(setUnits(response.data.data))
+                dispatch(setPageOfSupplier(response.data.data))
             })
             .catch(error => {
                 console.log(error?.response?.data)
             })
     }
 
-    // ** Custom Pagination
-    const CustomPagination = () => {
-
-        return (
-            <ReactPaginate
-                previousLabel={''}
-                nextLabel={''}
-                pageCount={pageOfUnit.totalPages || 1}
-                activeClassName='active'
-                forcePage={currentPage !== 0 ? currentPage - 1 : 0}
-                onPageChange={page => handlePagination(page)}
-                pageClassName={'page-item'}
-                nextLinkClassName={'page-link'}
-                nextClassName={'page-item next'}
-                previousClassName={'page-item prev'}
-                previousLinkClassName={'page-link'}
-                pageLinkClassName={'page-link'}
-                containerClassName={'pagination react-paginate justify-content-end my-2 pr-1'}
-                marginPagesDisplayed={0}
-                pageRangeDisplayed={10}
-            />
-        )
-    }
-
     // ** Table data to render
     const dataToRender = () => {
-        return pageOfUnit.content.map((item, index) => ({
-            no: index + 1 + pageOfUnit.pageable.offset,
+        return pageOfSupplier.content.map((item, index) => ({
+            no: index + 1 + pageOfSupplier.pageable.offset,
             ...item,
         }))
     }
@@ -247,16 +172,47 @@ const SuppliersList = () => {
 
     const notifyError = (message?: string) => toast.error(<ErrorToast message={message}/>, {hideProgressBar: true})
 
-    const [scrollInnerModal, setScrollInnerModal] = useState(false)
+
+    const {show} = useContextMenu({
+        id: 'menu_id'
+    })
+
+    const handleClick = text => {
+        notifySuccess(text)
+    }
 
     return (
         <Fragment>
+
+            <ModalUpdateSupplier
+                supplier={supplierToUpdate}
+                isOpen={isModalUpdateSupplierVisible}
+                modalToggle={() => setIsModalUpdateSupplierVisible(!isModalUpdateSupplierVisible)}
+                headerToggle={() => setIsModalUpdateSupplierVisible(!isModalUpdateSupplierVisible)}
+                onClick={() => setIsModalUpdateSupplierVisible(!isModalUpdateSupplierVisible)}
+                onSuccess={() => {
+                    setIsModalUpdateSupplierVisible(false)
+                    initialLoadData()
+                }}
+            />
+
+            <ModalAddSupplier
+                isOpen={isModalAddSupplierVisible}
+                modalToggle={() => setIsModalAddSupplierVisible(!isModalAddSupplierVisible)}
+                headerToggle={() => setIsModalAddSupplierVisible(!isModalAddSupplierVisible)}
+                onClick={() => setIsModalAddSupplierVisible(!isModalAddSupplierVisible)}
+                onSuccess={() => {
+                    setIsModalAddSupplierVisible(false)
+                    initialLoadData()
+                }}
+            />
+
             <Card>
-                {/*<Button color="primary" onClick={() => {*/}
-                {/*    notifySuccess()*/}
-                {/*    notifyError()*/}
-                {/*}}>toast</Button>*/}
                 <DataTable
+                    onRowClicked={(row, event) => {
+                        setSupplierToUpdate(row)
+                        show(event)
+                    }}
                     highlightOnHover
                     noHeader
                     pagination
@@ -266,14 +222,13 @@ const SuppliersList = () => {
                     columns={columns}
                     sortIcon={<ChevronDown/>}
                     className='react-dataTable'
-                    paginationComponent={CustomPagination}
+                    paginationComponent={() => TablePagination(pageOfSupplier, currentPage, handlePagination)}
                     data={dataToRender()}
                     subHeaderComponent={
-                        <CustomHeader
+                        <SupplierTableHeader
                             innerRef={searchTermInputRef}
-                            toggleSidebar={() => {
-                                // toggleSidebar()
-                                setScrollInnerModal(true)
+                            toggleModal={() => {
+                                setIsModalAddSupplierVisible(true)
                             }}
                             handlePerPage={handlePerPage}
                             rowsPerPage={rowsPerPage}
@@ -282,13 +237,28 @@ const SuppliersList = () => {
                         />
                     }
                 />
+
+
+                <Menu id='menu_id'>
+                    <Item onClick={() => handleClick('Option 1')}>
+                        <FileText size={14} className='mr-50'/>
+                        <span className='align-middle'>Details</span></Item>
+                    <Item
+                        onClick={() => {
+                            setIsModalUpdateSupplierVisible(true)
+                        }}>
+                        <Archive size={14} className='mr-50'/>
+                        <span className='align-middle'>Edit</span>
+                    </Item>
+                    <Item onClick={() => handleClick('Option 2')}>
+                        <Trash2 size={14} className='mr-50'/>
+                        <span className='align-middle'>Delete</span>
+                    </Item>
+                </Menu>
+
+
             </Card>
 
-            <ModalAddSupplier
-                isOpen={scrollInnerModal}
-                modalToggle={() => setScrollInnerModal(!scrollInnerModal)}
-                headerToggle={() => setScrollInnerModal(!scrollInnerModal)}
-                onClick={() => setScrollInnerModal(!scrollInnerModal)}/>
 
         </Fragment>
     )
