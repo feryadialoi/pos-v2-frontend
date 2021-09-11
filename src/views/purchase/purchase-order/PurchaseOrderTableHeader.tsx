@@ -1,5 +1,7 @@
 import {Button, Col, CustomInput, Input, Label, Row} from "reactstrap";
 import {Link} from "react-router-dom";
+import {Edit, Plus,} from "react-feather";
+
 
 interface PurchaseOrderTableHeaderProps {
     handlePerPage: any
@@ -57,7 +59,7 @@ const PurchaseOrderTableHeader = (props: PurchaseOrderTableHeaderProps) => {
                         />
                     </div>
                     <Button color='primary' onClick={onClickAdd}>
-                        Tambah Pesanan Pembelian
+                        Tambah
                     </Button>
                 </Col>
             </Row>

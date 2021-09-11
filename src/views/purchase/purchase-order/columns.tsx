@@ -70,6 +70,12 @@ const StatusBadge = (row) => {
                 return "light-info"
             case "APPROVED":
                 return "light-success"
+            case "COMPLETE":
+                return "light-success"
+            case "REFUSED":
+                return "danger"
+            case "VOID":
+                return "danger"
             default:
                 return "dark"
         }
@@ -89,14 +95,14 @@ export const columns: IDataTableColumn<PurchaseOrder & { no: any }>[] = [
         maxWidth: '100px',
         selector: 'no',
         sortable: true,
-        cell: row => StatusBadge(row)
+        cell: row => row.no
     },
     {
         name: 'Status',
         minWidth: '320px',
         selector: 'status',
         sortable: true,
-        cell: row => row.status
+        cell: row => StatusBadge(row)
     },
     {
         name: 'Kode',

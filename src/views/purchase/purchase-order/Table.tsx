@@ -1,5 +1,6 @@
-import {Fragment, useEffect, useState} from "react"
+import {Dispatch, Fragment, useEffect, useState} from "react"
 import {
+    Button,
     Card,
     CardBody,
     CardHeader,
@@ -36,12 +37,18 @@ import classnames from "classnames";
 import {Indonesian} from "flatpickr/dist/l10n/id";
 import Flatpickr from 'react-flatpickr'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
+import {dateOfDayMonthYear, formatDateToCommonFormat} from "../../../utility/date-format-util";
 
 const PurchaseOrdersList = () => {
+
+    // dateOfDayMonthYear(new Date())
+    const [startDate, setStartDate] = useState<Date | null>(null)
+    const [endDate, setEndDate] = useState<Date | null>(null)
+
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(0)
     const [rowsPerPage, setRowsPerPage] = useState(10)
-    const [sort, setSort] = useState("createdDate,asc")
+    const [sort, setSort] = useState("createdDate,desc")
     const [status, setStatus] = useState<PurchaseOrderStatus | null>(null)
 
     const [selectedPurchaseOrder, setSelectedPurchaseOrder] = useState<PurchaseOrder | null>(null)
@@ -55,7 +62,9 @@ const PurchaseOrdersList = () => {
             page: params.page,
             size: params.size,
             sort: params.sort,
-            status: params.status
+            status: params.status,
+            startDate: params.startDate,
+            endDate: params.endDate
         })
             .then(response => {
                 dispatch(setPageOfPurchaseOrder(response.data.data))
@@ -66,12 +75,19 @@ const PurchaseOrdersList = () => {
     }
 
     const initialLoadData = () => {
-        getPurchaseOrders({
+
+        const params = {
             page: currentPage,
             size: rowsPerPage,
+            status: status,
             sort: sort,
-            status: status
-        })
+        }
+
+        if (startDate) params["startDate"] = formatDateToCommonFormat(startDate)
+        if (endDate) params["endDate"] = formatDateToCommonFormat(endDate)
+
+        console.log(params)
+        getPurchaseOrders(params)
     }
 
     useEffect(() => {
@@ -81,35 +97,49 @@ const PurchaseOrdersList = () => {
     const handlePagination = page => {
         setCurrentPage(page.selected + 1)
 
-        getPurchaseOrders({
+        const params = {
             page: page.selected,
             size: rowsPerPage,
+            status: status,
             sort: sort,
-            status: status
-        })
+        }
+
+        if (startDate) params["startDate"] = formatDateToCommonFormat(startDate)
+        if (endDate) params["endDate"] = formatDateToCommonFormat(endDate)
+
+        getPurchaseOrders(params)
     }
 
     const handlePerPage = e => {
         const value = parseInt(e.currentTarget.value)
         setRowsPerPage(value)
 
-        getPurchaseOrders({
+        const params = {
             page: currentPage,
             size: value,
+            status: status,
             sort: sort,
-            status: status
-        })
+        }
+
+        if (startDate) params["startDate"] = formatDateToCommonFormat(startDate)
+        if (endDate) params["endDate"] = formatDateToCommonFormat(endDate)
+
+        getPurchaseOrders(params)
 
     }
 
     const handleFilter = val => {
         setSearchTerm(val)
-        getPurchaseOrders({
+        const params = {
             page: currentPage,
             size: rowsPerPage,
+            status: status,
             sort: sort,
-            status: status
-        })
+        }
+        if (startDate) params["startDate"] = formatDateToCommonFormat(startDate)
+        if (endDate) params["endDate"] = formatDateToCommonFormat(endDate)
+
+        getPurchaseOrders(params)
     }
 
     const dataToRender = () => {
@@ -138,13 +168,51 @@ const PurchaseOrdersList = () => {
 
     const handleFilterByStatus = (value: PurchaseOrderStatus | null) => () => {
         setStatus(value)
+
+        const params = {
+            page: currentPage,
+            size: rowsPerPage,
+            status: value,
+            sort: sort,
+        }
+
+        if (startDate) params["startDate"] = formatDateToCommonFormat(startDate)
+        if (endDate) params["endDate"] = formatDateToCommonFormat(endDate)
+
+        getPurchaseOrders(params)
+    }
+
+    const handleOnChangeDate = (dispatch: Dispatch<Date | null>, dateField: string) => (value: Date[]) => {
+        dispatch(value[0])
+
+        const params = {
+            page: currentPage,
+            size: rowsPerPage,
+            status: status,
+            sort: sort,
+        }
+
+        if (startDate) params["startDate"] = formatDateToCommonFormat(startDate)
+        if (endDate) params["endDate"] = formatDateToCommonFormat(endDate)
+
+        getPurchaseOrders({
+            ...params,
+            [dateField]: formatDateToCommonFormat(value[0])
+        })
+    }
+
+    const handleOnClickResetFilter = () => {
+        setStartDate(null)
+        setEndDate(null)
+
         getPurchaseOrders({
             page: currentPage,
             size: rowsPerPage,
+            status: status,
             sort: sort,
-            status: value
         })
     }
+
 
     return (
         <Fragment>
@@ -158,9 +226,9 @@ const PurchaseOrdersList = () => {
                             <FormGroup>
                                 <Label>Periode Awal</Label>
                                 <Flatpickr
-                                    // value={dueDate.dueDate}
-                                    // onChange={handleOnChangeDueDate}
-                                    id='hf-picker'
+                                    value={startDate}
+                                    onChange={handleOnChangeDate(setStartDate, "startDate")}
+                                    id='startDate'
                                     className={classnames('form-control', {'is-invalid': false})}
                                     options={{
                                         locale: Indonesian,
@@ -177,8 +245,8 @@ const PurchaseOrdersList = () => {
                             <FormGroup>
                                 <Label>Periode Akhir</Label>
                                 <Flatpickr
-                                    // value={dueDate.dueDate}
-                                    // onChange={handleOnChangeDueDate}
+                                    value={endDate}
+                                    onChange={handleOnChangeDate(setEndDate, "endDate")}
                                     id='hf-picker'
                                     className={classnames('form-control', {'is-invalid': false})}
                                     options={{
@@ -186,11 +254,16 @@ const PurchaseOrdersList = () => {
                                         altInput: true,
                                         altFormat: 'j F Y',
                                         dateFormat: 'Y-m-d',
-                                        // minDate: entryDate.entryDate,
+                                        minDate: startDate,
                                         allowInput: true
                                     }}
                                 />
                             </FormGroup>
+                        </Col>
+                        <Col>
+                            <Button color="primary" outline className="mt-2" onClick={handleOnClickResetFilter}>
+                                Reset
+                            </Button>
                         </Col>
                     </Row>
                 </CardBody>
@@ -205,17 +278,39 @@ const PurchaseOrdersList = () => {
                             <ListGroup className='list-group-horizontal-sm'>
                                 <ListGroupItem
                                     className={classNames({"active": status == null})}
-                                    onClick={handleFilterByStatus(null)}>Semua</ListGroupItem>
+                                    onClick={handleFilterByStatus(null)}>
+                                    Semua
+                                </ListGroupItem>
                                 <ListGroupItem
                                     className={classNames({"active": status == "DRAFT"})}
-                                    onClick={handleFilterByStatus("DRAFT")}>Draft</ListGroupItem>
+                                    onClick={handleFilterByStatus("DRAFT")}>
+                                    Draft
+                                </ListGroupItem>
                                 <ListGroupItem
                                     className={classNames({"active": status == "APPROVED"})}
-                                    onClick={handleFilterByStatus("APPROVED")}>Approved</ListGroupItem>
+                                    onClick={handleFilterByStatus("APPROVED")}>
+                                    Disetujui
+                                </ListGroupItem>
                                 <ListGroupItem
                                     className={classNames({"active": status == "AWAITING_APPROVAL"})}
-                                    onClick={handleFilterByStatus("AWAITING_APPROVAL")}>Awaiting
-                                    Approval</ListGroupItem>
+                                    onClick={handleFilterByStatus("AWAITING_APPROVAL")}>
+                                    Tunggu Persetujuan
+                                </ListGroupItem>
+                                <ListGroupItem
+                                    className={classNames({"active": status == "REFUSED"})}
+                                    onClick={handleFilterByStatus("REFUSED")}>
+                                    Ditolak
+                                </ListGroupItem>
+                                <ListGroupItem
+                                    className={classNames({"active": status == "COMPLETE"})}
+                                    onClick={handleFilterByStatus("COMPLETE")}>
+                                    Selesai
+                                </ListGroupItem>
+                                <ListGroupItem
+                                    className={classNames({"active": status == "VOID"})}
+                                    onClick={handleFilterByStatus("VOID")}>
+                                    Void
+                                </ListGroupItem>
                             </ListGroup>
                         </Col>
                     </Row>
