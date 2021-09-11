@@ -6,6 +6,7 @@ import {Page} from "../../models/Page";
 import {Purchase} from "../../models/Purchase";
 import {CreatePurchaseRequest} from "../../models/requests/CreatePurchaseRequest";
 import {PurchaseStatus} from "../../models/PurchaseStatus";
+import {DetailedPurchase} from "../../models/DetailedPurchase";
 
 
 interface GetPurchasesParams extends PageableRequest {
@@ -22,7 +23,7 @@ const getPurchases = (params: GetPurchasesParams) => {
 }
 
 const getPurchase = (purchaseId: string) => {
-    return httpClient.request<any, AxiosResponse<ApiResponse<Purchase, any>>>({
+    return httpClient.request<any, AxiosResponse<ApiResponse<DetailedPurchase, any>>>({
         url: "/api/v1/purchases/" + purchaseId,
         method: "GET"
     })
