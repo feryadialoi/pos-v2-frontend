@@ -48,7 +48,7 @@ const ChartOfAccountsList = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10)
     const [sort, setSort] = useState<string | null>("createdDate,asc")
     const [isModalAddChartOfAccountVisible, setIsModalAddChartOfAccountVisible] = useState(false)
-    const pageOfCoa: Page<ChartOfAccount> = useSelector<RootState, Page<ChartOfAccount>>(state => state.chartOfAccount.pageOfChartOfAccount)
+    const pageOfChartOfAccount: Page<ChartOfAccount> = useSelector<RootState, Page<ChartOfAccount>>(state => state.chartOfAccount.pageOfChartOfAccount)
 
     useHotkeys("ctrl+shift+s", () => {
         searchTermInputRef?.current?.focus()
@@ -122,8 +122,8 @@ const ChartOfAccountsList = () => {
 
     // ** Table data to render
     const dataToRender = () => {
-        return pageOfCoa.content.map((item, index) => ({
-            no: index + 1 + pageOfCoa.pageable.offset,
+        return pageOfChartOfAccount.content.map((item, index) => ({
+            no: index + 1 + pageOfChartOfAccount.pageable.offset,
             ...item,
         }))
     }
@@ -168,7 +168,7 @@ const ChartOfAccountsList = () => {
                         console.log('sort', row)
                     }}
                     className='react-dataTable'
-                    paginationComponent={() => TablePagination(pageOfCoa, currentPage, handlePagination)}
+                    paginationComponent={() => TablePagination(pageOfChartOfAccount, currentPage, handlePagination)}
                     data={dataToRender()}
                     subHeaderComponent={
                         <ChartOfAccountTableHeader
