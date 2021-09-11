@@ -4,16 +4,17 @@ import {ProductOfCreatePurchaseOrderRequest} from "./ProductOfCreatePurchaseOrde
 
 export interface CreatePurchaseOrderRequest {
     supplierId: string
-    reference: string
     paymentType: PaymentType
     entryDate: string
-    dueDate: string
+    dueDate: string | null
+    term: number | null
     products: ProductOfCreatePurchaseOrderRequest[]
+    status: PurchaseOrderStatus
+    reference: string
     note: string
     otherFee: number
     otherFeeDescription: string
     shippingFee: number
     shippingFeeDescription: string
-    status: PurchaseOrderStatus
 }
 
