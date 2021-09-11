@@ -9,19 +9,21 @@ import {PurchaseOrder} from "../../models/PurchaseOrder";
 import {PageableRequest} from "../../models/requests/PageableRequest";
 import {PurchaseOrderStatus} from "../../models/PurchaseOrderStatus";
 
-interface GetPurchaseOrdersParams extends PageableRequest {
+export interface GetPurchaseOrdersParams extends PageableRequest {
     supplierName?: string | null
     status?: PurchaseOrderStatus | null
     startDate?: string | null
     endDate?: string | null
     code?: string | null
+    statuses?: PurchaseOrderStatus[] | null
 }
 
 const getPurchaseOrders = (params: GetPurchaseOrdersParams) => {
     return httpClient.request<any, AxiosResponse<ApiResponse<Page<PurchaseOrder>, any>>>({
         url: "/api/v1/purchase-orders",
         method: "GET",
-        params: params
+        params: params,
+        paramsSerializer: params1 => qs.stringify(params1, {arrayFormat: "repeat"})
     })
 }
 
