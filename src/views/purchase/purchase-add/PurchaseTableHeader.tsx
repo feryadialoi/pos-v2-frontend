@@ -9,7 +9,7 @@ interface PurchaseOrderTableHeaderProps {
     innerRef?: any
 }
 
-const PurchaseOrderTableHeader = (props: PurchaseOrderTableHeaderProps) => {
+const PurchaseTableHeader = (props: PurchaseOrderTableHeaderProps) => {
 
     const {handlePerPage, rowsPerPage, handleFilter, searchTerm, innerRef} = props
 
@@ -71,4 +71,4 @@ const PurchaseOrderTableHeader = (props: PurchaseOrderTableHeaderProps) => {
     )
 }
 
-export default PurchaseOrderTableHeader
+export default PurchaseTableHeader

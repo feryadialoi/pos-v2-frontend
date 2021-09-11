@@ -2,8 +2,9 @@ import {IDataTableColumn} from "react-data-table-component";
 import {PurchaseOrder} from "../../../models/PurchaseOrder";
 import {PurchaseOrderDetail} from "../../../models/PurchaseOrderDetail";
 import TableActionButton from "../../component/table-action-button";
+import {ProductPurchaseOrderOptions} from "../purchase-order-add/PurchaseOrderAddPage";
 
-const columnsOfModalImportPurchaseOrder: IDataTableColumn<PurchaseOrderDetail & { no: any }>[] = [
+const columnsOfModalImportPurchaseOrder: IDataTableColumn<ProductPurchaseOrderOptions & { no: any }>[] = [
     {
         name: "#",
         selector: "no",
@@ -12,13 +13,14 @@ const columnsOfModalImportPurchaseOrder: IDataTableColumn<PurchaseOrderDetail & 
     },
     {
         name: "Nama Produk",
+        minWidth: "320px",
         selector: "product.name",
         cell: row => row.product.name
     },
     {
         name: "Unit",
         selector: "unit",
-        cell: row => row.unit.name
+        cell: row => row.unit?.label
     },
     {
         name: "Quantity",
@@ -38,7 +40,7 @@ const columnsOfModalImportPurchaseOrder: IDataTableColumn<PurchaseOrderDetail & 
     {
         name: "Jumlah",
         selector: "amount",
-        cell: row => row.amount
+        cell: row => 0
     },
     {
         name: "Aksi",
