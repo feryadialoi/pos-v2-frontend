@@ -5,7 +5,7 @@ import {TaxFormat} from "./TaxFormat";
 import {Warehouse} from "./Warehouse";
 
 export interface PurchaseOrderDetail {
-    amount: number
+    total: number
     discount: number
     discountFormat: DiscountFormat
     id: string
