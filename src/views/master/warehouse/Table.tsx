@@ -1,8 +1,21 @@
-import {Fragment, useEffect, useRef, useState} from "react";
-import {Button, Card, Col, CustomInput, Input, Label, Row} from "reactstrap";
+import {FC, Fragment, useEffect, useRef, useState} from "react";
+import {
+    Button,
+    Card,
+    Col,
+    CustomInput,
+    Input,
+    Label,
+    Modal,
+    ModalBody,
+    ModalFooter,
+    ModalHeader,
+    Row
+} from "reactstrap";
 import DataTable from 'react-data-table-component'
+import '@styles/react/libs/tables/react-dataTable-component.scss'
 import {columns} from "./columns";
-import {Archive, ChevronDown, FileText, Trash2} from "react-feather";
+import {Archive, ChevronDown, Delete, FileText, Trash2} from "react-feather";
 import {useDispatch, useSelector} from "react-redux";
 import {Page} from "../../../models/Page";
 import {RootState} from "../../../redux/states/root";
@@ -18,6 +31,10 @@ import '@styles/react/libs/context-menu/context-menu.scss'
 import ModalUpdateWarehouse from "./ModalUpdateWarehouse";
 import WarehouseTableHeader from "./WarehouseTableHeader";
 import TablePagination from "../../component/TablePagination";
+import TableActionButton from "../../component/table-action-button";
+import {notifyError} from "../../component/ErrorToast";
+import set from "react-hook-form/dist/utils/set";
+import {useModalDeleteConfirmation} from "../../component/ModalDeleteConfirmation";
 
 const WarehousesList = () => {
     const searchTermInputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null)
@@ -28,10 +45,13 @@ const WarehousesList = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10)
     const [sort, setSort] = useState<string | null>("createdDate,asc")
     const [warehouseToUpdate, setWarehouseToUpdate] = useState<Warehouse>({
-        id: '',
-        name: '',
-        address: '',
+        id: '', name: '', address: '',
     })
+
+    const [warehouseToDelete, setWarehouseToDelete] = useState<Warehouse>({
+        id: '', name: '', address: '',
+    })
+
 
     const [isModalAddWarehouseVisible, setIsModalAddWarehouseVisible] = useState(false)
     const [isModalUpdateWarehouseVisible, setIsModalUpdateWarehouseVisible] = useState(false)
@@ -57,6 +77,7 @@ const WarehousesList = () => {
             page: 0,
             size: rowsPerPage,
             name: searchTerm,
+            address: searchTerm,
             sort: sort
         })
             .then(response => {
@@ -78,6 +99,7 @@ const WarehousesList = () => {
             page: page.selected,
             size: rowsPerPage,
             name: searchTerm,
+            address: searchTerm,
             sort: sort
         })
             .then(response => {
@@ -97,6 +119,7 @@ const WarehousesList = () => {
             page: currentPage,
             size: value,
             name: searchTerm,
+            address: searchTerm,
             sort: sort
         })
             .then(response => {
@@ -114,6 +137,7 @@ const WarehousesList = () => {
             page: currentPage,
             size: currentPage * rowsPerPage,
             name: val,
+            address: val,
             sort: sort
         })
             .then(response => {
@@ -140,8 +164,32 @@ const WarehousesList = () => {
         notifySuccess(text)
     }
 
+    const deleteWarehouse = () => {
+        warehouseApiService.deleteWarehouse(warehouseToDelete.id)
+            .then(response => {
+                notifySuccess("Berhasil dihapus")
+                initialLoadData()
+            })
+            .catch(error => {
+                notifyError("Gagal hapus, " + error?.response?.error)
+            })
+    }
+
+    const [isDeleteModalVisible, setIsDeleteModalVisible, message, setMessage, showDeleteDialog, DeleteModalConfirm] = useModalDeleteConfirmation()
+
     return (
         <Fragment>
+            <DeleteModalConfirm
+                isOpen={isDeleteModalVisible}
+                toggleModal={() => setIsDeleteModalVisible(!isDeleteModalVisible)}
+                toggleHeader={() => setIsDeleteModalVisible(!isDeleteModalVisible)}
+                onClickDelete={() => {
+                    deleteWarehouse()
+                }}
+                onClickCancel={() => {
+                }}
+                data={warehouseToDelete.name}
+            />
             <ModalUpdateWarehouse
                 warehouse={warehouseToUpdate}
                 isOpen={isModalUpdateWarehouseVisible}
@@ -172,11 +220,13 @@ const WarehousesList = () => {
             <Card>
                 <DataTable
                     onRowClicked={(row, event) => {
-                        setWarehouseToUpdate({
+                        const warehouse: Warehouse = {
                             id: row.id,
                             name: row.name,
                             address: row.address
-                        })
+                        }
+                        setWarehouseToUpdate(warehouse)
+                        setWarehouseToDelete(warehouse)
                         show(event)
                     }}
                     highlightOnHover
@@ -185,7 +235,23 @@ const WarehousesList = () => {
                     subHeader
                     responsive
                     paginationServer
-                    columns={columns}
+                    columns={[...columns, {
+                        name: "Aksi",
+                        cell: row => (<TableActionButton
+                            hasAuthorityToEdit
+                            hasAuthorityToDelete
+                            useDelete
+                            useEdit
+                            onClickDelete={() => {
+                                setWarehouseToDelete(row)
+                                showDeleteDialog(warehouseToDelete.name)
+                            }}
+                            onClickEdit={() => {
+                                setIsModalUpdateWarehouseVisible(true)
+                                setWarehouseToUpdate(row)
+                            }}
+                        />)
+                    }]}
                     sortIcon={<ChevronDown/>}
                     className='react-dataTable'
                     paginationComponent={() => TablePagination(pageOfWarehouse, currentPage, handlePagination)}

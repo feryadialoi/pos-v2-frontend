@@ -31,9 +31,9 @@ export const columns: IDataTableColumn<Warehouse & { no: any }>[] = [
         sortable: true,
         cell: row => row.address
     },
-    {
-        name: 'Aksi',
-        allowOverflow: true,
-        cell: row => renderAction(row)
-    },
+    // {
+    //     name: 'Aksi',
+    //     allowOverflow: true,
+    //     cell: row => renderAction(row)
+    // },
 ]
