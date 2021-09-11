@@ -15,9 +15,21 @@ import {columns} from './columns'
 import {useDispatch, useSelector} from 'react-redux'
 
 // ** Third Party Components
-import {Archive, Check, ChevronDown, FileText, Trash2} from 'react-feather'
+import {Archive, Check, ChevronDown, FileText, Trash, Trash2} from 'react-feather'
 import DataTable from 'react-data-table-component'
-import {Card, CardBody, CardHeader, CardTitle, Col, FormGroup, Label, ListGroup, ListGroupItem, Row} from 'reactstrap'
+import {
+    Button,
+    Card,
+    CardBody,
+    CardHeader,
+    CardTitle,
+    Col,
+    FormGroup,
+    Label,
+    ListGroup,
+    ListGroupItem,
+    Row
+} from 'reactstrap'
 
 // ** Styles
 import '@styles/react/libs/react-select/_react-select.scss'
@@ -32,7 +44,7 @@ import 'react-contexify/dist/ReactContexify.min.css'
 import '@styles/react/libs/context-menu/context-menu.scss'
 import TablePagination from "../../component/TablePagination";
 import PurchaseTableHeader from "./PurchaseTableHeader";
-import {purchaseApiService} from "../../../apiservice/purchase";
+import {GetPurchasesParams, purchaseApiService} from "../../../apiservice/purchase";
 import {setPageOfPurchase} from "../../../redux/actions/purchase";
 import {Purchase} from "../../../models/Purchase";
 import {Mapping} from "../../../models/Mapping";
@@ -59,6 +71,7 @@ const PurchasesList = () => {
 
     const pageOfPurchase: Page<Purchase> = useSelector<RootState, Page<Purchase>>(state => state.purchase.pageOfPurchase)
 
+    const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null)
 
     useHotkeys("ctrl+shift+s", () => {
         searchTermInputRef?.current?.focus()
@@ -68,11 +81,12 @@ const PurchasesList = () => {
         console.log("ctrl+b")
     })
 
-    const getPurchases = (params: Mapping) => {
+    const getPurchases = (params: Mapping & GetPurchasesParams) => {
         purchaseApiService.getPurchases({
             page: params.page,
             size: params.size,
-            sort: params.sort
+            sort: params.sort,
+            status: params.status
         })
             .then(response => {
                 dispatch(setPageOfPurchase(response.data.data))
@@ -151,8 +165,18 @@ const PurchasesList = () => {
         history.push("/purchases/add")
     }
 
+    const gotoPurchaseViewPage = () => {
+        history.push("/purchases/view/" + selectedPurchase?.id)
+    }
+
     const handleFilterByStatus = (value: PurchaseStatus | null) => () => {
         setStatus(value)
+        getPurchases({
+            page: currentPage,
+            size: rowsPerPage,
+            sort: sort,
+            status: value
+        })
     }
 
     return (
@@ -201,6 +225,11 @@ const PurchasesList = () => {
                                 />
                             </FormGroup>
                         </Col>
+                        <Col>
+                            <Button color="primary" outline className="mt-2">
+                                <Trash size={16} className="mr-1"/>Reset Filter
+                            </Button>
+                        </Col>
                     </Row>
                 </CardBody>
             </Card>
@@ -209,20 +238,34 @@ const PurchasesList = () => {
                     <ListGroup className='list-group-horizontal-sm'>
                         <ListGroupItem
                             className={classNames({"active": status == null})}
-                            onClick={handleFilterByStatus(null)}>Semua</ListGroupItem>
+                            onClick={handleFilterByStatus(null)}>
+                            Semua
+                        </ListGroupItem>
                         <ListGroupItem
                             className={classNames({"active": status == "UNPAID"})}
-                            onClick={handleFilterByStatus("UNPAID")}>Unpaid</ListGroupItem>
+                            onClick={handleFilterByStatus("UNPAID")}>
+                            Belum Dibayar
+                        </ListGroupItem>
                         <ListGroupItem
                             className={classNames({"active": status == "PARTIAL_PAID"})}
-                            onClick={handleFilterByStatus("PARTIAL_PAID")}>Partial Paid</ListGroupItem>
+                            onClick={handleFilterByStatus("PARTIAL_PAID")}>
+                            Dibayar Sebagian
+                        </ListGroupItem>
                         <ListGroupItem
                             className={classNames({"active": status == "PAID"})}
-                            onClick={handleFilterByStatus("PAID")}>Paid</ListGroupItem>
+                            onClick={handleFilterByStatus("PAID")}>
+                            Lunas
+                        </ListGroupItem>
+                        <ListGroupItem
+                            className={classNames({"active": status == "VOID"})}
+                            onClick={handleFilterByStatus("VOID")}>
+                            Void
+                        </ListGroupItem>
                     </ListGroup>
                 </CardBody>
                 <DataTable
                     onRowClicked={(row, event) => {
+                        setSelectedPurchase(row)
                         show(event)
                     }}
                     highlightOnHover
@@ -255,7 +298,7 @@ const PurchasesList = () => {
                 <Menu id='menu_id'>
                     <Item
                         onClick={() => {
-
+                            gotoPurchaseViewPage()
                         }}>
                         <FileText size={14} className='mr-50'/>
                         <span className='align-middle'>Detail</span></Item>

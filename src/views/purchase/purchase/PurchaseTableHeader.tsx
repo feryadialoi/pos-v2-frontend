@@ -57,7 +57,7 @@ const PurchaseTableHeader = (props: PurchaseTableHeaderProps) => {
                         />
                     </div>
                     <Button color='primary' onClick={onClickAdd}>
-                        Buat Pembelian
+                        Tambah
                     </Button>
                 </Col>
             </Row>

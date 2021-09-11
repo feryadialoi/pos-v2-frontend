@@ -11,12 +11,14 @@ import {
     Eye,
     Delete
 } from 'react-feather'
-import {Button, DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown} from "reactstrap";
+import {Badge, Button, DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown} from "reactstrap";
 import {Unit} from "../../../models/Unit";
 import {IDataTableColumn} from "react-data-table-component";
 import {store} from "../../../redux/storeConfig/store";
 import {Link} from "react-router-dom";
 import {Purchase} from "../../../models/Purchase";
+import {PurchaseOrderStatus} from "../../../models/PurchaseOrderStatus";
+import {PurchaseStatus} from "../../../models/PurchaseStatus";
 
 const renderAction = (row) => {
     return (
@@ -58,6 +60,28 @@ const renderAction = (row) => {
     )
 }
 
+const StatusBadge = (row) => {
+    const color = (status: PurchaseStatus) => {
+        switch (status) {
+            case "UNPAID":
+                return "dark"
+            case "PARTIAL_PAID":
+                return "light-info"
+            case "PAID":
+                return "light-success"
+            case "VOID":
+                return "danger"
+            default:
+                return "light-success"
+        }
+    }
+
+    return (
+        <Badge pill color={color(row.status)} className='mr-1'>
+            {row.status}
+        </Badge>
+    )
+}
 
 export const columns: IDataTableColumn<Purchase & { no: any }>[] = [
     {
@@ -68,11 +92,39 @@ export const columns: IDataTableColumn<Purchase & { no: any }>[] = [
         cell: row => row.no
     },
     {
+        name: 'Status',
+        minWidth: '320px',
+        selector: 'status',
+        sortable: true,
+        cell: row => StatusBadge(row)
+    },
+    {
         name: 'Kode',
         minWidth: '320px',
         selector: 'code',
         sortable: true,
         cell: row => row.code
+    },
+    {
+        name: 'Supplier',
+        minWidth: '320px',
+        selector: 'supplier',
+        sortable: true,
+        cell: row => row.supplier.name
+    },
+    {
+        name: 'Ref',
+        minWidth: '320px',
+        selector: 'reference',
+        sortable: true,
+        cell: row => row.reference || "-"
+    },
+    {
+        name: 'Tipe Pembayaran',
+        minWidth: '320px',
+        selector: 'paymentType',
+        sortable: true,
+        cell: row => row.paymentType
     },
     {
         name: 'Aksi',
