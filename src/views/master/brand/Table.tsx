@@ -19,6 +19,10 @@ import 'react-contexify/dist/ReactContexify.min.css'
 import '@styles/react/libs/context-menu/context-menu.scss'
 import TablePagination from "../../component/TablePagination";
 import BrandTableHeader from "./BrandTableHeader";
+import '@styles/react/libs/tables/react-dataTable-component.scss'
+import TableActionButton from "../../component/table-action-button";
+import {useModalDeleteConfirmation} from "../../component/ModalDeleteConfirmation";
+import {notifyError} from "../../component/ErrorToast";
 
 const BrandsList = () => {
     const searchTermInputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null)
@@ -36,10 +40,14 @@ const BrandsList = () => {
     const [isModalUpdateBrandVisible, setIsModalUpdateBrandVisible] = useState(false)
 
     const [brandToUpdate, setBrandToUpdate] = useState<Brand>({id: "", name: ""})
+    const [brandToDelete, setBrandToDelete] = useState<Brand>({id: "", name: ""})
 
     const [timer, setTimer] = useState<any>(null)
 
     const pageOfBrand: Page<Category> = useSelector<RootState, Page<Brand>>(state => state.brand.pageOfBrand)
+
+
+    const [isDeleteModalVisible, setIsDeleteModalVisible, message, setMessage, showDeleteModal, ModalDeleteConfirm] = useModalDeleteConfirmation()
 
     useHotkeys("ctrl+shift+s", () => {
         searchTermInputRef?.current?.focus()
@@ -156,9 +164,33 @@ const BrandsList = () => {
         notifySuccess(text)
     }
 
+    const deleteBrand = () => {
+        brandApiService.deleteBrand(brandToDelete.id)
+            .then(response => {
+                notifySuccess(brandToDelete.name + " Berhasil dihapus")
+            })
+            .catch(error => {
+                notifyError("Gagal hapus " + brandToDelete.name)
+            })
+    }
+
 
     return (
         <Fragment>
+
+            <ModalDeleteConfirm
+                isOpen={isDeleteModalVisible}
+                toggleModal={() => setIsDeleteModalVisible(!isDeleteModalVisible)}
+                toggleHeader={() => setIsDeleteModalVisible(!isDeleteModalVisible)}
+                onClickDelete={() => {
+                    deleteBrand()
+                }}
+                onClickCancel={() => {
+
+                }}
+                data={brandToDelete.name}
+            />
+
             <ModalAddBrand
                 isOpen={isModalAddBrandVisible}
                 modalToggle={() => setIsModalAddBrandVisible(!isModalAddBrandVisible)}
@@ -185,10 +217,10 @@ const BrandsList = () => {
             <Card>
                 <DataTable
                     onRowClicked={(row, event) => {
-                        setBrandToUpdate({
-                            id: row.id,
-                            name: row.name
-                        })
+                        setBrandToUpdate(row)
+
+                        setBrandToDelete(row)
+
                         show(event)
                     }}
                     highlightOnHover
@@ -197,7 +229,23 @@ const BrandsList = () => {
                     subHeader
                     responsive
                     paginationServer
-                    columns={columns}
+                    columns={[...columns, {
+                        name: "Aksi", cell: (row) => <TableActionButton
+                            hasAuthorityToEdit
+                            useEdit
+                            onClickEdit={() => {
+                                setIsModalUpdateBrandVisible(true)
+                                setBrandToUpdate(row)
+                            }}
+
+                            useDelete
+                            hasAuthorityToDelete
+                            onClickDelete={() => {
+                                showDeleteModal(row.name)
+                                setBrandToDelete(row)
+                            }}
+                        />
+                    }]}
                     sortIcon={<ChevronDown/>}
                     className='react-dataTable'
                     paginationComponent={() => TablePagination(pageOfBrand, currentPage, handlePagination)}
@@ -215,7 +263,9 @@ const BrandsList = () => {
                 />
 
                 <Menu id='menu_id'>
-                    <Item onClick={() => handleClick('Option 1')}>
+                    <Item
+                        onClick={() => {
+                        }}>
                         <FileText size={14} className='mr-50'/>
                         <span className='align-middle'>Details</span></Item>
                     <Item
@@ -225,7 +275,10 @@ const BrandsList = () => {
                         <Archive size={14} className='mr-50'/>
                         <span className='align-middle'>Edit</span>
                     </Item>
-                    <Item onClick={() => handleClick('Option 2')}>
+                    <Item
+                        onClick={() => {
+                            showDeleteModal(brandToDelete.name)
+                        }}>
                         <Trash2 size={14} className='mr-50'/>
                         <span className='align-middle'>Delete</span>
                     </Item>
