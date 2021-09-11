@@ -6,9 +6,11 @@ import {Warehouse} from "../../models/Warehouse";
 import {CreateWarehouseRequest} from "../../models/requests/CreateWarehouseRequest";
 import {UpdateWarehouseRequest} from "../../models/requests/UpdateWarehouseRequest";
 import {PageableRequest} from "../../models/requests/PageableRequest";
+import {WarehouseWithProductStocks} from "../../models/WarehouseWithProductStocks";
 
 interface GetWarehousesParams extends PageableRequest {
     name?: string | null
+    address?: string | null
 }
 
 const getWarehouses = (params: GetWarehousesParams) => {
@@ -59,6 +61,13 @@ const deleteWarehouse = (warehouseId: string) => {
     })
 }
 
+const getWarehouseWithProductStocks = (warehouseId: string) => {
+    return httpClient.request<any, AxiosResponse<ApiResponse<WarehouseWithProductStocks, any>>>({
+        url: "/api/v1/warehouses/" + warehouseId + "/product-stocks",
+        method: "GET"
+    })
+}
+
 
 export const warehouseApiService = {
     getWarehouses,
@@ -66,5 +75,6 @@ export const warehouseApiService = {
     getWarehouse,
     createWarehouse,
     updateWarehouse,
-    deleteWarehouse
+    deleteWarehouse,
+    getWarehouseWithProductStocks,
 }
