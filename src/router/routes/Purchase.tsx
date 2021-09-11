@@ -43,6 +43,14 @@ const PurchaseRoutes: AppRoute[] = [
         }
     },
     {
+        path: "/purchases/view/:purchaseId",
+        component: lazy(() => import("../../views/purchase/purchase-view/PurchaseViewPage")),
+        exact: true,
+        meta: {
+            authRoute: true
+        }
+    },
+    {
         path: "/purchase-returns",
         component: lazy(() => import("../../views/purchase/purchase-return/PurchaseReturnPage")),
         exact: true,
