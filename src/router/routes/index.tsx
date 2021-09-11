@@ -7,6 +7,7 @@ import Purchase from "./Purchase";
 import ReportRoutes from "./Report";
 import WarehouseRoutes from "./Warehouse";
 import SettingRoutes from "./Setting";
+import InventoryRoutes from "./Inventory";
 
 
 export interface AppRouteMeta {
@@ -35,6 +36,7 @@ const Routes: AppRoute[] = [
     ...Purchase,
     ...WarehouseRoutes,
     ...AccountingRoutes,
+    ...InventoryRoutes,
     ...User,
     {
         path: '/login',
