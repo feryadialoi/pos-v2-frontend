@@ -50,7 +50,7 @@ const columns: IDataTableColumn<PurchaseOrderDetail & { no: any }>[] = [
         name: "Jumlah",
         maxWidth: "320px",
         selector: "amount",
-        cell: row => row.amount
+        cell: row => row.total
     },
 ]
 

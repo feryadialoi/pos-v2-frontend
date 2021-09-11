@@ -16,11 +16,13 @@ import {DetailedPurchaseOrder} from "../../../models/DetailedPurchaseOrder";
 import DataTable from "react-data-table-component";
 import '@styles/react/libs/tables/react-dataTable-component.scss'
 import '@styles/react/libs/react-select/_react-select.scss'
-import {Check, Printer} from "react-feather";
+import {Check, CheckSquare, Printer, Trash} from "react-feather";
 import {formatDateToReadableDate} from "../../../utility/date-format-util";
 import columns from "./columns";
 import NominalPurchaseOrder from "./NominalPurchaseOrder";
 import {HttpNotFoundError} from "../../../apiservice/http-error";
+import {notifySuccess} from "../../component/SuccessToast";
+import {notifyError} from "../../component/ErrorToast";
 
 
 interface PurchaseOrderViewPageParams {
@@ -37,6 +39,8 @@ const PurchaseOrderViewPage = () => {
     const history = useHistory()
 
     const getPurchaseOrder = () => {
+        setIsLoading(true)
+
         purchaseOrderApiService.getPurchaseOrder(params.purchaseOrderId)
             .then(response => {
                 console.log(response.data)
@@ -65,14 +69,71 @@ const PurchaseOrderViewPage = () => {
     }
 
     const approvePurchaseOrder = () => {
-        purchaseOrderApiService.approvePurchaseOrder({
-            purchaseOrderId: params.purchaseOrderId
-        }).then(response => {
+        setIsLoading(true)
 
+        purchaseOrderApiService.updatePurchaseOrderStatus(params.purchaseOrderId, {
+            status: "APPROVED"
+        }).then(response => {
+            notifySuccess("Pesanan Pembelian berhasil disetujui")
+            getPurchaseOrder()
         }).catch(error => {
-            console.log(error?.response?.data)
+            notifyError(error?.response?.error)
+            console.error(error?.response)
+        }).finally(() => {
+            setIsLoading(false)
         })
     }
+
+    const requestApprovePurchaseOrder = () => {
+        setIsLoading(true)
+
+        purchaseOrderApiService.updatePurchaseOrderStatus(params.purchaseOrderId, {
+            status: "AWAITING_APPROVAL"
+        }).then(response => {
+            notifySuccess("Permintaan Persetujuan terkirim")
+            getPurchaseOrder()
+        }).catch(error => {
+            notifyError(error?.response?.error)
+            console.error(error?.response)
+        }).finally(() => {
+            setIsLoading(false)
+        })
+    }
+
+
+    const refusePurchaseOrder = () => {
+        setIsLoading(true)
+
+        purchaseOrderApiService.updatePurchaseOrderStatus(params.purchaseOrderId, {
+            status: "REFUSED"
+        }).then(response => {
+            notifySuccess("Permintaan Persetujuan telah ditolak")
+            getPurchaseOrder()
+        }).catch(error => {
+            notifyError(error?.response?.error)
+            console.error(error?.response)
+        }).finally(() => {
+            setIsLoading(false)
+        })
+    }
+
+
+    const voidPurchaseOrder = () => {
+        setIsLoading(true)
+
+        purchaseOrderApiService.updatePurchaseOrderStatus(params.purchaseOrderId, {
+            status: "VOID"
+        }).then(response => {
+            notifySuccess("Pesanan Pembelian berhasil di void")
+            getPurchaseOrder()
+        }).catch(error => {
+            notifyError(error?.response?.error)
+            console.error(error?.response)
+        }).finally(() => {
+            setIsLoading(false)
+        })
+    }
+
 
     const gotoPurchaseAddPage = () => {
         history.push("/purchases/add", {
@@ -107,13 +168,53 @@ const PurchaseOrderViewPage = () => {
                         <Row>
                             <Col className="d-flex justify-content-end align-content-center">
                                 <div>
-                                    <Button outline color="primary" className="mr-1"><Printer size={14}
-                                                                                              className="mr-1"/>Print</Button>
-                                    <Button color="primary" className="mr-1">
-                                        <Check size={14} className="mr-1"/>Approve
+                                    <Button outline color="primary" className="mr-1">
+                                        <Printer size={16} className="mr-1"/>Print
                                     </Button>
-                                    <Button outline color="primary" onClick={gotoPurchaseAddPage}>Lanjutkan ke
-                                        Pembelian</Button>
+
+                                    {
+                                        (
+                                            detailedPurchaseOrder.status == "DRAFT"
+                                        )
+                                        &&
+                                        (<Button color="primary" className="mr-1" onClick={requestApprovePurchaseOrder}>
+                                            <Check size={16} className="mr-1"/>Ajukan Approval
+                                        </Button>)
+                                    }
+                                    {
+                                        (
+                                            detailedPurchaseOrder.status == "DRAFT" ||
+                                            detailedPurchaseOrder.status == "AWAITING_APPROVAL"
+                                        )
+                                        &&
+                                        (<Button color="primary" className="mr-1" onClick={approvePurchaseOrder}>
+                                            <Check size={16} className="mr-1"/>Approve
+                                        </Button>)
+                                    }
+                                    {
+                                        (
+                                            detailedPurchaseOrder.status == "DRAFT" ||
+                                            detailedPurchaseOrder.status == "AWAITING_APPROVAL"
+                                        )
+                                        &&
+                                        (<Button outline color="danger" className="mr-1" onClick={refusePurchaseOrder}>
+                                            <Check size={16} className="mr-1"/>Refuse
+                                        </Button>)
+                                    }
+                                    {
+                                        (
+                                            detailedPurchaseOrder.status == "APPROVED"
+                                        )
+                                        &&
+                                        (<Button outline color="primary" onClick={gotoPurchaseAddPage} className="mr-1">
+                                            <CheckSquare size={16} className="mr-1"/>Lanjutkan ke Pembelian
+                                        </Button>)
+                                    }
+                                    {
+                                        (<Button outline color="danger" onClick={voidPurchaseOrder}>
+                                            <Trash size={16} className="mr-1"/>Void
+                                        </Button>)
+                                    }
                                 </div>
                             </Col>
                         </Row>
