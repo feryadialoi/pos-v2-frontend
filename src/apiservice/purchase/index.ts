@@ -9,9 +9,9 @@ import {PurchaseStatus} from "../../models/PurchaseStatus";
 import {DetailedPurchase} from "../../models/DetailedPurchase";
 
 
-interface GetPurchasesParams extends PageableRequest {
+export interface GetPurchasesParams extends PageableRequest {
     code?: string | null
-    status?: PurchaseStatus
+    status?: PurchaseStatus | null
 }
 
 const getPurchases = (params: GetPurchasesParams) => {
