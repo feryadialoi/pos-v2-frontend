@@ -144,6 +144,19 @@ export default [
         ]
     },
     {
+        id: 'inventory',
+        title: 'Inventory',
+        icon: <Box size={20}/>,
+        children: [
+            {
+                id: 'inventoryWarehouse',
+                title: 'Gudang',
+                icon: <Circle size={12}/>,
+                navLink: '/inventories/warehouses'
+            }
+        ]
+    },
+    {
         id: 'logistic',
         title: 'Logistik',
         icon: <Box size={20}/>,
