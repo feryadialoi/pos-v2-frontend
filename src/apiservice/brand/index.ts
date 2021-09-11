@@ -35,8 +35,16 @@ const updateBrand = (brandId: string, updateBrandRequest: UpdateBrandRequest) =>
     })
 }
 
+const deleteBrand = (brandId: string) => {
+    return httpClient.request({
+        url:"/api/v1/brands/" + brandId,
+        method: "DELETE",
+    })
+}
+
 export const brandApiService = {
     getBrands,
     createBrand,
     updateBrand,
+    deleteBrand
 }
