@@ -1,1 +1,1 @@
-export type PurchaseStatus = "UNPAID" | "PARTIAL_PAID" | "PAID"
+export type PurchaseStatus = "UNPAID" | "PARTIAL_PAID" | "PAID" | "VOID"
