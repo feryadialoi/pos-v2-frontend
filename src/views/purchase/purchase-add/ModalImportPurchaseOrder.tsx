@@ -10,7 +10,7 @@ import {Page} from "../../../models/Page";
 import {PurchaseOrderStatus} from "../../../models/PurchaseOrderStatus";
 import {ChevronDown} from "react-feather";
 import TablePagination from "../../component/TablePagination";
-import PurchaseOrderTableHeader from "./PurchaseOrderTableHeader";
+import PurchaseTableHeader from "./PurchaseTableHeader";
 
 interface ModalImportPurchaseOrderProps {
     isOpen: boolean
@@ -29,6 +29,7 @@ const ModalImportPurchaseOrder = (props: ModalImportPurchaseOrderProps) => {
     const [rowsPerPage, setRowsPerPage] = useState(10)
     const [sort, setSort] = useState("createdDate,asc")
     const [status, setStatus] = useState<PurchaseOrderStatus | null>(null)
+    const statuses: PurchaseOrderStatus[] = ["APPROVED"]
 
     const [pageOfPurchaseOrder, setPageOfPurchaseOrder] = useState<Page<PurchaseOrder>>(initialPage)
 
@@ -39,6 +40,7 @@ const ModalImportPurchaseOrder = (props: ModalImportPurchaseOrderProps) => {
             sort: params.sort,
             status: params.status,
             code: params.code,
+            statuses: statuses
         })
             .then(response => {
                 setPageOfPurchaseOrder(response.data.data)
@@ -54,7 +56,8 @@ const ModalImportPurchaseOrder = (props: ModalImportPurchaseOrderProps) => {
             size: rowsPerPage,
             sort: sort,
             status: status,
-            code: searchTerm
+            code: searchTerm,
+            statuses: statuses
         })
     }
 
@@ -70,7 +73,8 @@ const ModalImportPurchaseOrder = (props: ModalImportPurchaseOrderProps) => {
             size: rowsPerPage,
             sort: sort,
             status: status,
-            code: searchTerm
+            code: searchTerm,
+            statuses: statuses
         })
     }
 
@@ -83,7 +87,8 @@ const ModalImportPurchaseOrder = (props: ModalImportPurchaseOrderProps) => {
             size: value,
             sort: sort,
             status: status,
-            code: searchTerm
+            code: searchTerm,
+            statuses: statuses
         })
 
     }
@@ -95,7 +100,8 @@ const ModalImportPurchaseOrder = (props: ModalImportPurchaseOrderProps) => {
             size: rowsPerPage,
             sort: sort,
             status: status,
-            code: val
+            code: val,
+            statuses: statuses
         })
     }
 
@@ -143,7 +149,7 @@ const ModalImportPurchaseOrder = (props: ModalImportPurchaseOrderProps) => {
                     paginationComponent={() => TablePagination(pageOfPurchaseOrder, currentPage, handlePagination)}
                     data={dataToRender()}
                     subHeaderComponent={
-                        <PurchaseOrderTableHeader
+                        <PurchaseTableHeader
                             innerRef={null}
                             handlePerPage={handlePerPage}
                             rowsPerPage={rowsPerPage}
