@@ -6,6 +6,7 @@ import {RootState} from "../../../redux/states/root";
 import {useHotkeys} from "react-hotkeys-hook";
 import ReactPaginate from "react-paginate";
 import DataTable from "react-data-table-component";
+import '@styles/react/libs/tables/react-dataTable-component.scss'
 import {Archive, ChevronDown, FileText, Trash2} from "react-feather";
 import {columns} from "./columns";
 import {categoryApiService} from "../../../apiservice/category";
@@ -19,6 +20,10 @@ import 'react-contexify/dist/ReactContexify.min.css'
 import '@styles/react/libs/context-menu/context-menu.scss'
 import TablePagination from "../../component/TablePagination";
 import CategoryTableHeader from "./CategoryTableHeader";
+import {useModalDeleteConfirmation} from "../../component/ModalDeleteConfirmation";
+import {notifyWarning} from "../../component/WarningToast";
+import {notifyError} from "../../component/ErrorToast";
+import TableActionButton from "../../component/table-action-button";
 
 const CategoriesList = () => {
     const searchTermInputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null)
@@ -38,6 +43,18 @@ const CategoriesList = () => {
     const [timer, setTimer] = useState<any>(null)
 
     const pageOfCategory: Page<Category> = useSelector<RootState, Page<Category>>(state => state.category.pageOfCategory)
+
+    const [categoryToDelete, setCategoryToDelete] = useState<Category>({id: "", name: ""})
+
+    const [
+        isDeleteConfirmModalVisible,
+        setIsDeleteConfirmModalVisible,
+        deleteMessage,
+        setDeleteMessage,
+        showDeleteModal,
+        ModalDeleteConfirm,
+    ] = useModalDeleteConfirmation()
+
 
     useHotkeys("ctrl+shift+s", () => {
         searchTermInputRef?.current?.focus()
@@ -158,8 +175,33 @@ const CategoriesList = () => {
         notifySuccess(text)
     }
 
+    const deleteCategory = () => {
+        categoryApiService.deleteCategory(categoryToDelete.id)
+            .then(response => {
+                notifySuccess("Data terhapus")
+
+                initialLoadData()
+
+            })
+            .catch(error => {
+                console.log(error?.response)
+                notifyError("Gagal hapus, " + error?.response?.error)
+            })
+    }
     return (
         <Fragment>
+            <ModalDeleteConfirm
+                isOpen={isDeleteConfirmModalVisible}
+                toggleModal={() => setIsDeleteConfirmModalVisible(!isDeleteConfirmModalVisible)}
+                toggleHeader={() => setIsDeleteConfirmModalVisible(!isDeleteConfirmModalVisible)}
+                onClickDelete={() => {
+                    deleteCategory()
+                }}
+                onClickCancel={() => {
+
+                }}
+                data={categoryToDelete.name}
+            />
             <ModalAddCategory
                 isOpen={isModalAddCategoryVisible}
                 modalToggle={() => setIsModalAddCategoryVisible(!isModalAddCategoryVisible)}
@@ -183,10 +225,10 @@ const CategoriesList = () => {
             <Card>
                 <DataTable
                     onRowClicked={(row, event) => {
-                        setCategoryToUpdate({
-                            id: row.id,
-                            name: row.name
-                        })
+                        setCategoryToUpdate(row)
+
+                        setCategoryToDelete(row)
+
                         show(event)
                     }}
                     highlightOnHover
@@ -195,7 +237,26 @@ const CategoriesList = () => {
                     subHeader
                     responsive
                     paginationServer
-                    columns={columns}
+                    columns={[
+                        ...columns,
+                        {
+                            name: "Aksi", cell: (row) => <TableActionButton
+                                hasAuthorityToEdit
+                                useEdit
+                                onClickEdit={() => {
+                                    setIsModalUpdateCategoryVisible(true)
+                                    setCategoryToUpdate(row)
+                                }}
+
+                                useDelete
+                                hasAuthorityToDelete
+                                onClickDelete={() => {
+                                    showDeleteModal(row.name)
+                                    setCategoryToDelete(row)
+                                }}
+                            />
+                        }
+                    ]}
                     sortIcon={<ChevronDown/>}
                     className='react-dataTable'
                     paginationComponent={() => TablePagination(pageOfCategory, currentPage, handlePagination)}
@@ -213,7 +274,9 @@ const CategoriesList = () => {
                 />
 
                 <Menu id='menu_id'>
-                    <Item onClick={() => handleClick('Option 1')}>
+                    <Item
+                        onClick={() => {
+                        }}>
                         <FileText size={14} className='mr-50'/>
                         <span className='align-middle'>Details</span></Item>
                     <Item
@@ -223,7 +286,10 @@ const CategoriesList = () => {
                         <Archive size={14} className='mr-50'/>
                         <span className='align-middle'>Edit</span>
                     </Item>
-                    <Item onClick={() => handleClick('Option 2')}>
+                    <Item
+                        onClick={() => {
+                            showDeleteModal(categoryToDelete.name)
+                        }}>
                         <Trash2 size={14} className='mr-50'/>
                         <span className='align-middle'>Delete</span>
                     </Item>

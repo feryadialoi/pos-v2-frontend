@@ -15,6 +15,8 @@ import {Button, DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown
 import {Category} from "../../../models/Category";
 import {IDataTableColumn} from "react-data-table-component";
 import {Link} from "react-router-dom";
+import TableActionButton from "../../component/table-action-button";
+
 const renderAction = (row) => {
     return (
         <UncontrolledDropdown>
@@ -71,9 +73,9 @@ export const columns: IDataTableColumn<Category & { no: any }>[] = [
         sortable: true,
         cell: row => row.name
     },
-    {
-        name: 'Aksi',
-        allowOverflow: true,
-        cell: row => renderAction(row)
-    },
+    // {
+    //     name: 'Aksi',
+    //     allowOverflow: true,
+    //     cell: row => renderAction(row)
+    // },
 ]
