@@ -23,7 +23,7 @@ import ModalSelectProduct from "../../component/modal-select-product/ModalSelect
 import {Product} from "../../../models/Product";
 import BigDecimal from "js-big-decimal";
 import CurrencyInput, {formatValue} from "react-currency-input-field";
-import {Edit, RotateCcw, Search, Trash, Upload} from "react-feather";
+import {Edit, RotateCcw, Search, Share, Trash, Upload} from "react-feather";
 import {notifyWarning} from "../../component/WarningToast";
 import 'uppy/dist/uppy.css'
 import '@uppy/status-bar/dist/style.css'
@@ -33,9 +33,7 @@ import {dateOfDayMonthYear, formatDateToCommonFormat} from "../../../utility/dat
 import {supplierApiService} from "../../../apiservice/supplier";
 import {SelectOptions} from "../../../models/SelectOptions";
 import {PaymentType} from "../../../models/PaymentType";
-import {
-    CreatePurchaseOrderRequest
-} from "../../../models/requests/CreatePurchaseOrderRequest";
+import {CreatePurchaseOrderRequest} from "../../../models/requests/CreatePurchaseOrderRequest";
 import {notifyError} from "../../component/ErrorToast";
 import {sanitizeCurrencyInput} from "../../../utility/currency-input-util";
 import ModalHistoryPrice, {HistoryPriceParam} from "./ModalHistoryPrice";
@@ -44,7 +42,6 @@ import {PurchaseOrderStatus} from "../../../models/PurchaseOrderStatus";
 import {useHistory} from "react-router-dom";
 import NominalTitleValue from "../../component/NominalTitleValue";
 import {Unit} from "../../../models/Unit";
-import DataTable from "react-data-table-component";
 import '@styles/react/libs/tables/react-dataTable-component.scss'
 // @ts-ignore
 import UILoader from '@components/ui-loader'
@@ -57,6 +54,8 @@ import TableActionButton from "../../component/table-action-button";
 import {TaxFormat} from "../../../models/TaxFormat";
 import {DiscountFormat} from "../../../models/DiscountFormat";
 import {type} from "os";
+import {addDays} from "../../../utility/date-util";
+import {DateTime} from "luxon";
 
 
 const paymentOptions: any[] = [
@@ -91,10 +90,6 @@ interface EntryDateOptions {
     entryDate: Date | null
     entryDateError: string | null
 }
-
-// todo history price
-// note discount and tax still cause wrong calculation due to missing format value
-
 
 export interface ProductPurchaseOrderOptions {
     product: Product
@@ -208,6 +203,8 @@ const PurchaseOrderAddPage = () => {
 
     const [otherFeeDescription, setOtherFeeDescription] = useState("")
 
+    const [dueDateDayCount, setDueDateDayCount] = useState(0)
+
     const history = useHistory()
 
     const loadSuppliers = () => {
@@ -284,6 +281,12 @@ const PurchaseOrderAddPage = () => {
     }
 
     const handleOnChangePaymentType = (option) => {
+
+        if (option?.value == "CASH") {
+            setDueDateDayCount(0)
+            setDueDate({dueDate: null, dueDateError: null})
+        }
+
         setPaymentType(prevState => ({
             ...prevState, paymentType: option
         }))
@@ -308,12 +311,18 @@ const PurchaseOrderAddPage = () => {
     }
 
     const handleOnChangeDueDate = (value: Date[]) => {
-        console.log(value)
-        console.log(entryDate.entryDate)
         const date = value[0]
-        setDueDate(prevState => {
-            return {...prevState, dueDate: date}
-        })
+        setDueDate({dueDate: date, dueDateError: null})
+        setDueDateDayCountByDueDate(date)
+    }
+
+    const setDueDateDayCountByDueDate = (date: Date) => {
+        const dueDateInLuxon = DateTime.fromJSDate(date)
+        const entryDateInLuxon = DateTime.fromJSDate(entryDate.entryDate!)
+        const diff = dueDateInLuxon.diff(entryDateInLuxon, "days")
+        const newDueDateDayCount = diff.days
+
+        setDueDateDayCount(newDueDateDayCount)
     }
 
     const handleOnChangeProductQuantity = (index: number) => (value: any) => {
@@ -458,6 +467,22 @@ const PurchaseOrderAddPage = () => {
 
     const handleOnChangeOtherFee = (value) => {
         sanitizeCurrencyInput(value, setOtherFee)
+    }
+
+    const handleOnChangeDueDateDayCount = (event) => {
+        setDueDateDayCount(() => {
+
+            const dayCount = parseInt(event.target.value)
+
+            const newDueDate = addDays(entryDate.entryDate!, dayCount)
+
+            setDueDate({
+                dueDate: newDueDate,
+                dueDateError: null
+            })
+
+            return dayCount
+        })
     }
 
     const calculateSubtotal = () => {
@@ -731,6 +756,7 @@ const PurchaseOrderAddPage = () => {
             supplierId: supplier.supplier!.value,
             entryDate: formatDateToCommonFormat(entryDate.entryDate!),
             dueDate: formatDateToCommonFormat(dueDate.dueDate!),
+            term: dueDateDayCount,
             reference: reference,
             note: note,
             paymentType: paymentType.paymentType!.value as PaymentType,
@@ -819,6 +845,16 @@ const PurchaseOrderAddPage = () => {
         setOtherFeeDescription("")
     }
 
+    const handleOnApplyChangeToProduct = (product: ProductPurchaseOrderToEditInModal) => {
+        console.log("productPurchaseOrderToEdit", product)
+        setProducts(prevState => {
+            const temp = [...prevState]
+            temp[product.index] = product.productToEdit
+            return temp
+        })
+        setIsModalEditProductPurchaseOrderVisible(!isModalEditProductPurchaseOrderVisible)
+    }
+
     useEffect(() => {
         Promise.any([
             loadSuppliers(),
@@ -835,15 +871,7 @@ const PurchaseOrderAddPage = () => {
                 toggleModal={() => setIsModalEditProductPurchaseOrderVisible(!isModalEditProductPurchaseOrderVisible)}
                 toggleHeader={() => setIsModalEditProductPurchaseOrderVisible(!isModalEditProductPurchaseOrderVisible)}
                 productPurchaseOrderToEdit={productPurchaseOrderToEditInModal}
-                onApplyChange={(value) => {
-                    console.log("productPurchaseOrderToEdit", value)
-                    setProducts(prevState => {
-                        const temp = [...prevState]
-                        temp[value.index] = value.productToEdit
-                        return temp
-                    })
-                    setIsModalEditProductPurchaseOrderVisible(!isModalEditProductPurchaseOrderVisible)
-                }}
+                onApplyChange={handleOnApplyChangeToProduct}
                 setProductPurchaseOrderToEdit={setProductPurchaseOrderToEditInModal}
                 warehouses={warehouses}
             />
@@ -860,7 +888,6 @@ const PurchaseOrderAddPage = () => {
                 toggleHeader={() => setIsModalHistoryPriceVisible(!isModalHistoryPriceVisible)}
                 onClickHistoryPrice={onClickSelectedHistoryPrice}
             />
-
             <UILoader blocking={isLoading}>
                 {/* title card section start */}
                 <Card>
@@ -882,6 +909,26 @@ const PurchaseOrderAddPage = () => {
                             </Col>
                             <Col md={6}>
                                 <FormGroup>
+                                    <Label for="supplier">Supplier</Label>
+                                    <Select
+                                        id="supplier"
+                                        name="supplier"
+                                        className={classnames('react-select', {'is-invalid': supplier.supplierError})}
+                                        classNamePrefix='select'
+                                        isClearable
+                                        placeholder="Pilih Supplier"
+                                        theme={selectThemeColors}
+                                        options={suppliers}
+                                        value={supplier.supplier}
+                                        onChange={handleOnChangeSupplier}
+                                    />
+                                    {supplier.supplierError && <FormFeedback>{supplier.supplierError}</FormFeedback>}
+                                </FormGroup>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col md={3}>
+                                <FormGroup>
                                     <Label for="payment-type">Tipe Pembayaran</Label>
                                     <Select
                                         id="payment-type"
@@ -899,27 +946,6 @@ const PurchaseOrderAddPage = () => {
                                     <FormFeedback>{paymentType.paymentTypeError}</FormFeedback>}
                                 </FormGroup>
                             </Col>
-                        </Row>
-                        <Row>
-                            <Col md={6}>
-                                <FormGroup>
-                                    <Label for="supplier">Supplier</Label>
-                                    <Select
-                                        id="supplier"
-                                        name="supplier"
-                                        className={classnames('react-select', {'is-invalid': supplier.supplierError})}
-                                        classNamePrefix='select'
-                                        isClearable
-                                        placeholder="Pilih Supplier"
-                                        theme={selectThemeColors}
-                                        options={suppliers}
-                                        value={supplier.supplier}
-                                        onChange={handleOnChangeSupplier}
-                                    />
-                                    {supplier.supplierError && <FormFeedback>{supplier.supplierError}</FormFeedback>}
-                                </FormGroup>
-                            </Col>
-
                             <Col md={3}>
                                 <FormGroup>
                                     <Label for="hf-picker">Tanggal Transaksi</Label>
@@ -940,31 +966,55 @@ const PurchaseOrderAddPage = () => {
                                     <FormFeedback>{entryDate.entryDateError}</FormFeedback>}
                                 </FormGroup>
                             </Col>
-                            {paymentType.paymentType && paymentType.paymentType.value == "CREDIT" &&
-                            (<Col md={3}>
-                                <FormGroup>
-                                    <Label for="hf-picker">Tanggal Jatuh Tempo</Label>
-                                    <Flatpickr
-                                        value={dueDate.dueDate}
-                                        onChange={handleOnChangeDueDate}
-                                        id='hf-picker'
-                                        className={classnames('form-control', {'is-invalid': dueDate.dueDateError})}
-                                        options={{
-                                            locale: Indonesian,
-                                            altInput: true,
-                                            altFormat: 'j F Y',
-                                            dateFormat: 'Y-m-d',
-                                            minDate: entryDate.entryDate,
-                                            allowInput: true
-                                        }}
-                                    />
-                                    {dueDate.dueDateError && <FormFeedback>{dueDate.dueDateError}</FormFeedback>}
-                                </FormGroup>
-                            </Col>)
+
+                            {paymentType?.paymentType?.value == "CREDIT" && (
+                                <Col md={3}>
+                                    <FormGroup>
+                                        <Label for="hf-picker">Tanggal Jatuh Tempo</Label>
+                                        <Flatpickr
+                                            value={dueDate.dueDate}
+                                            onChange={handleOnChangeDueDate}
+                                            id='hf-picker'
+                                            className={classnames('form-control', {'is-invalid': dueDate.dueDateError})}
+                                            options={{
+                                                locale: Indonesian,
+                                                altInput: true,
+                                                altFormat: 'j F Y',
+                                                dateFormat: 'Y-m-d',
+                                                minDate: entryDate.entryDate,
+                                                allowInput: true
+                                            }}
+                                        />
+                                        {dueDate.dueDateError && <FormFeedback>{dueDate.dueDateError}</FormFeedback>}
+                                    </FormGroup>
+                                </Col>)
+                            }
+                            {paymentType?.paymentType?.value == "CREDIT" && (
+                                <Col>
+                                    <FormGroup>
+                                        <Label>Lama Jatuh Tempo</Label>
+                                        <Input type="number"
+                                               min={1}
+                                               value={dueDateDayCount}
+                                               onChange={handleOnChangeDueDateDayCount}/>
+                                    </FormGroup>
+                                </Col>)
                             }
                         </Row>
+
                         <Row>
-                            <Col md={3}>
+                            <Col md={6}>
+                                <FormGroup>
+                                    <Label for="reference">Referensi</Label>
+                                    <Input value={reference}
+                                           onChange={(event => setReference(event.target.value))}
+                                           placeholder="Referensi"/>
+                                </FormGroup>
+                            </Col>
+                        </Row>
+
+                        <Row>
+                            <Col>
                                 <Row>
                                     <Col md={12}>
                                         <FormGroup>
@@ -991,7 +1041,7 @@ const PurchaseOrderAddPage = () => {
                                     </Col>
                                 </Row>
                             </Col>
-                            <Col md={3}>
+                            <Col>
                                 <Row>
                                     <Col md={12}>
                                         <FormGroup>
@@ -1018,13 +1068,7 @@ const PurchaseOrderAddPage = () => {
                                     </Col>
                                 </Row>
                             </Col>
-                            <Col md={6}>
-                                <FormGroup>
-                                    <Label for="reference">Referensi</Label>
-                                    <Input value={reference} onChange={(event => setReference(event.target.value))}
-                                           placeholder="Referensi"/>
-                                </FormGroup>
-                            </Col>
+
                         </Row>
                     </CardBody>
                 </Card>
@@ -1254,11 +1298,24 @@ const PurchaseOrderAddPage = () => {
                     <CardBody>
                         <Row>
                             <Col md={3}>
-                                <FormGroup className="mt-1">
-                                    <Label>Catatan</Label>
-                                    <Input type="textarea" rows="3" placeholder={"Catatan..."} value={note}
-                                           onChange={(event) => setNote(event.target.value)}/>
-                                </FormGroup>
+                                <Row>
+                                    <Col md={12}>
+                                        <FormGroup className="">
+                                            <Label>Catatan</Label>
+                                            <Input type="textarea" rows="3" placeholder={"Catatan..."} value={note}
+                                                   onChange={(event) => setNote(event.target.value)}/>
+                                        </FormGroup>
+                                    </Col>
+                                    {/*<Col md={12}>*/}
+                                    {/*    <FormGroup className="mt-1">*/}
+                                    {/*        <Label>Attachment</Label>*/}
+                                    {/*        <div*/}
+                                    {/*            className="form-control form-control-file d-flex justify-content-center align-items-center py-3">*/}
+                                    {/*            <Share/>*/}
+                                    {/*        </div>*/}
+                                    {/*    </FormGroup>*/}
+                                    {/*</Col>*/}
+                                </Row>
                             </Col>
                             <Col>
                                 <NominalTitleValue valueSize="lg" title="Diskon"
@@ -1273,6 +1330,7 @@ const PurchaseOrderAddPage = () => {
                                                    value={calculateGrandTotal().getValue()}/>
                             </Col>
                         </Row>
+
                         <Row>
                             <Col md={12} className="d-flex justify-content-end mt-2">
                                 <UncontrolledButtonDropdown>
@@ -1301,3 +1359,10 @@ const PurchaseOrderAddPage = () => {
 }
 
 export default PurchaseOrderAddPage
+
+/**
+ *
+ * TODO history harga produk (supplierId, productId) set to element in list product
+ * TODO add upload file/image (attachment)
+ *
+ */

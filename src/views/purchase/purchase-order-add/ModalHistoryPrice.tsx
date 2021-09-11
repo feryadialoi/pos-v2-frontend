@@ -3,6 +3,7 @@ import {useState} from "react";
 import DataTable, {IDataTableColumn} from "react-data-table-component";
 import '@styles/react/libs/tables/react-dataTable-component.scss'
 
+
 const columns: IDataTableColumn<any & { no: any }>[] = [
     // {
     //     name: '#',
