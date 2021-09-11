@@ -37,6 +37,8 @@ import 'react-contexify/dist/ReactContexify.min.css'
 import '@styles/react/libs/context-menu/context-menu.scss'
 import TablePagination from "../../component/TablePagination";
 import UnitTableHeader from "./UnitTableHeader";
+import {useModalDeleteConfirmation} from "../../component/ModalDeleteConfirmation";
+import TableActionButton from "../../component/table-action-button";
 
 
 const UnitsList = () => {
@@ -53,8 +55,11 @@ const UnitsList = () => {
     const [isModalAddUnitVisible, setIsModalAddUnitVisible] = useState(false)
     const [isModalUpdateUnitVisible, setIsModalUpdateUnitVisible] = useState(false)
     const [unitToUpdate, setUnitToUpdate] = useState<Unit>({id: "", name: ""})
+    const [unitToDelete, setUnitToDelete] = useState<Unit>({id: "", name: ""})
 
     const pageOfUnit: Page<Unit> = useSelector<RootState, Page<Unit>>(state => state.unit.pageOfUnit)
+
+    const [isDeleteModalVisible, setIsDeleteModalVisible, message, setMessage, showDeleteDialog, ModalDeleteConfirm] = useModalDeleteConfirmation()
 
     useHotkeys("ctrl+shift+s", () => {
         searchTermInputRef?.current?.focus()
@@ -161,8 +166,33 @@ const UnitsList = () => {
         notifySuccess(text)
     }
 
+    const deleteUnit = () => {
+        unitApiService.deleteUnit(unitToDelete.id)
+            .then(response => {
+                notifySuccess("Berhasil dihapus")
+
+                initialLoadData()
+
+            })
+            .catch(error => {
+                notifyError(error?.response?.error)
+            })
+    }
+
     return (
         <Fragment>
+            <ModalDeleteConfirm
+                isOpen={isDeleteModalVisible}
+                toggleModal={() => setIsDeleteModalVisible(!isDeleteModalVisible)}
+                toggleHeader={() => setIsDeleteModalVisible(!isDeleteModalVisible)}
+                onClickDelete={() => {
+                    deleteUnit()
+                }}
+                onClickCancel={() => {
+
+                }}
+                data={unitToDelete.name}
+            />
             <ModalUpdateUnit
                 unit={unitToUpdate}
                 isOpen={isModalUpdateUnitVisible}
@@ -187,10 +217,8 @@ const UnitsList = () => {
             <Card>
                 <DataTable
                     onRowClicked={(row, event) => {
-                        setUnitToUpdate({
-                            id: row.id,
-                            name: row.name
-                        })
+                        setUnitToUpdate(row)
+                        setUnitToDelete(row)
                         show(event)
                     }}
                     highlightOnHover
@@ -199,7 +227,23 @@ const UnitsList = () => {
                     subHeader
                     responsive
                     paginationServer
-                    columns={columns}
+                    columns={[...columns, {
+                        name: "Aksi",
+                        cell: (row) => <TableActionButton
+                            hasAuthorityToEdit
+                            useEdit
+                            hasAuthorityToDelete
+                            useDelete
+                            onClickEdit={() => {
+                                setIsModalUpdateUnitVisible(true)
+                                setUnitToUpdate(row)
+                            }}
+                            onClickDelete={() => {
+                                setIsDeleteModalVisible(true)
+                                setUnitToDelete(row)
+                            }}
+                        />
+                    }]}
                     sortIcon={<ChevronDown/>}
                     onSort={(row) => {
                         console.log('sort', row)
@@ -221,7 +265,9 @@ const UnitsList = () => {
 
 
                 <Menu id='menu_id'>
-                    <Item onClick={() => handleClick('Option 1')}>
+                    <Item
+                        onClick={() => {
+                        }}>
                         <FileText size={14} className='mr-50'/>
                         <span className='align-middle'>Details</span></Item>
                     <Item
@@ -231,7 +277,10 @@ const UnitsList = () => {
                         <Archive size={14} className='mr-50'/>
                         <span className='align-middle'>Edit</span>
                     </Item>
-                    <Item onClick={() => handleClick('Option 2')}>
+                    <Item
+                        onClick={() => {
+                            showDeleteDialog(unitToDelete.name)
+                        }}>
                         <Trash2 size={14} className='mr-50'/>
                         <span className='align-middle'>Delete</span>
                     </Item>

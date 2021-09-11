@@ -73,9 +73,9 @@ export const columns: IDataTableColumn<Unit & { no: any }>[] = [
         sortable: true,
         cell: row => row.name
     },
-    {
-        name: 'Aksi',
-        allowOverflow: true,
-        cell: row => renderAction(row)
-    },
+    // {
+    //     name: 'Aksi',
+    //     allowOverflow: true,
+    //     cell: row => renderAction(row)
+    // },
 ]
