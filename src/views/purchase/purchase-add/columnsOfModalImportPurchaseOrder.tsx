@@ -1,5 +1,6 @@
 import {IDataTableColumn} from "react-data-table-component";
 import {PurchaseOrder} from "../../../models/PurchaseOrder";
+import {formatDateToReadableDate} from "../../../utility/date-format-util";
 
 const columnsOfModalImportPurchaseOrder: IDataTableColumn<PurchaseOrder & { no: any }>[] = [
     {
@@ -17,6 +18,11 @@ const columnsOfModalImportPurchaseOrder: IDataTableColumn<PurchaseOrder & { no: 
         name: "Kode",
         selector: "code",
         cell: row => row.code
+    },
+    {
+        name: "Tanggal",
+        selector: "entryDate",
+        cell: row => formatDateToReadableDate(new Date(row.entryDate))
     },
     {
         name: "Total",
