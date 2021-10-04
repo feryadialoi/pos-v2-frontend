@@ -31,6 +31,7 @@ import {useDispatch} from "react-redux";
 import {setUserId, setUserData} from "../redux/actions/user";
 import {useRef, useState} from "react";
 import {useHotkeys} from "react-hotkeys-hook";
+import {setCompany} from "../redux/actions/company";
 
 const AppLogoWithText = () => {
     return (
@@ -172,10 +173,10 @@ const LoginPage = () => {
                         refreshToken: response.data.data.refreshToken
                     })
                 )
-
                 dispatch(setUserId(response.data.data.userId))
-
                 dispatch(setUserData(response.data.data.user))
+                dispatch(setCompany(response.data.data.company))
+
 
                 history.replace("/")
 

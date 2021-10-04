@@ -2,6 +2,7 @@ import {authLocalPersistence} from "../../../localpersistence/auth"
 import {Auth} from "../../../models/auth"
 import {LOGIN, LOGOUT, SET_ACCESS_TOKEN} from "../../types/auth"
 import {userLocalPersistence} from "../../../localpersistence/user";
+import {companyLocalPersistence} from "../../../localpersistence/company";
 
 
 interface SetAuth {
@@ -30,6 +31,7 @@ export const handleLogout = (): AuthActionTypes => {
     authLocalPersistence.removeAuth()
     userLocalPersistence.removeUserId()
     userLocalPersistence.removeUserData()
+    companyLocalPersistence.removeCompany()
     return ({type: LOGOUT, payload: null})
 }
 

@@ -11,6 +11,10 @@ import {PurchaseOrderState} from "../purchase-order";
 import {SaleState} from "../sale";
 import {SaleOrderState} from "../sale-order";
 import {ChartOfAccountState} from "../chart-of-account";
+import {CustomerState} from "../customer";
+import {EmployeeState} from "../employee";
+import {CompanyState} from "../company";
+import {SalesmanState} from "../salesman";
 
 export interface RootState {
     auth: AuthState
@@ -26,4 +30,8 @@ export interface RootState {
     sale: SaleState,
     saleOrder: SaleOrderState,
     chartOfAccount: ChartOfAccountState
+    customer: CustomerState,
+    employee: EmployeeState,
+    company: CompanyState,
+    salesman: SalesmanState
 }

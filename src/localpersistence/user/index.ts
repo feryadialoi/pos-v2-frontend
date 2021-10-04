@@ -28,11 +28,8 @@ const setUserData = (userData: UserData) => {
 
 const getUserData = (): UserData | null => {
     const user = localStorage.getItem(USER_DATA)
-    if (!!user) {
-        return JSON.parse(user) as UserData
-    } else {
-        return null
-    }
+    if (!user) return null
+    return JSON.parse(user) as UserData
 }
 
 const removeUserData = () => {

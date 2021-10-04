@@ -55,7 +55,7 @@ const ProductsList = () => {
     })
 
 
-    const pageOfProduct: Page<Product> = useSelector<RootState, Page<Product>>(state => state.product.products)
+    const pageOfProduct: Page<Product> = useSelector<RootState, Page<Product>>(state => state.product.pageOfProduct)
 
     useHotkeys("ctrl+shift+s", () => {
         searchTermInputRef?.current?.focus()

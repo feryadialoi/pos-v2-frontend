@@ -69,7 +69,7 @@ export const columns: IDataTableColumn<Category & { no: any }>[] = [
     {
         name: 'Nama',
         minWidth: '320px',
-        selector: 'email',
+        selector: 'name',
         sortable: true,
         cell: row => row.name
     },

@@ -1,0 +1,6 @@
+export type Religion = "ISLAM"
+    | "CHRISTIAN"
+    | "CATHOLIC"
+    | "HINDU"
+    | "BUDDHA"
+    | "KONG_HU_CU"

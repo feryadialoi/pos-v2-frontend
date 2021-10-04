@@ -63,3 +63,9 @@ export class HttpInternalServerErrorError<T = any> extends HttpError {
         super(message, 500, response);
     }
 }
+
+export type UnauthenticateErrorType =
+    | "UsernameNotFoundException"
+    | "BadCredentialsException"
+    | "TokenExpiredException"
+    | "RefreshTokenExpiredException"

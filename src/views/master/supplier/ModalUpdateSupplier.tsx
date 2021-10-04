@@ -22,9 +22,9 @@ const ModalAddSupplier = ({supplier, isOpen, modalToggle, headerToggle, onClick,
             isOpen={isOpen}
             toggle={modalToggle}
         >
-            <ModalHeader toggle={headerToggle}>Tambah Supplier</ModalHeader>
+            <ModalHeader toggle={headerToggle}>Edit Supplier</ModalHeader>
 
-            <UpdateSupplierForm supplier={supplier} onSuccess={onSuccess}/>
+            <UpdateSupplierForm supplier={supplier} onSuccess={onSuccess} modalToggle={modalToggle}/>
 
             {/*<ModalFooter>*/}
             {/*    <Button color='primary' onClick={onClick}>*/}

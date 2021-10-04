@@ -17,6 +17,10 @@ import purchaseOrder from './purchase-order'
 import sale from './sale'
 import saleOrder from './sale-order'
 import chartOfAccount from './chart-of-account'
+import customer from './customer'
+import employee from './employee'
+import company from './company'
+import salesman from './salesman'
 
 const rootReducer = combineReducers({
     auth,
@@ -33,7 +37,11 @@ const rootReducer = combineReducers({
     purchaseOrder,
     sale,
     saleOrder,
-    chartOfAccount
+    chartOfAccount,
+    customer,
+    employee,
+    company,
+    salesman,
 })
 
 export default rootReducer

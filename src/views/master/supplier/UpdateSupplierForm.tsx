@@ -24,9 +24,10 @@ import {Supplier} from "../../../models/Supplier";
 interface AddSupplierFormProps {
     supplier: Supplier
     onSuccess: () => void
+    modalToggle: () => void
 }
 
-const AddSupplierForm = ({supplier, onSuccess}: AddSupplierFormProps) => {
+const AddSupplierForm = ({supplier, onSuccess, modalToggle,}: AddSupplierFormProps) => {
     const SignupSchema = yup.object().shape({
         name: yup.string().required("Nama belum diisi"),
         address: yup.string().required("Alamat belum diisi"),
@@ -86,7 +87,7 @@ const AddSupplierForm = ({supplier, onSuccess}: AddSupplierFormProps) => {
                             id="code"
                             name="code"
                             disabled
-                            defaultValue="auto"
+                            defaultValue={supplier.code}
                             placeholder="Kode Supplier"
                         />
                     </FormGroup>
@@ -268,11 +269,11 @@ const AddSupplierForm = ({supplier, onSuccess}: AddSupplierFormProps) => {
                 </ModalBody>
                 <ModalFooter>
                     <FormGroup className="d-flex justify-content-end">
-                        <Button type="submit" color="primary" className="mr-1" onClick={() => {
-                        }}>Simpan</Button>
+                        <Button type="submit" color="primary" className="mr-1">Simpan</Button>
 
                         <Button color="primary" outline onClick={() => {
-                        }}>Reset</Button>
+                            modalToggle()
+                        }}>Batal</Button>
                     </FormGroup>
                 </ModalFooter>
             </Form>

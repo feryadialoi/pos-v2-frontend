@@ -79,6 +79,12 @@ export default [
                 icon: <Circle size={20}/>,
                 navLink: '/suppliers'
             },
+            {
+                id: 'salesman',
+                title: 'Salesman',
+                icon: <Circle size={20}/>,
+                navLink: '/salesmen'
+            },
         ]
     },
     {

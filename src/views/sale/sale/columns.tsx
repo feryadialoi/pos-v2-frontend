@@ -2,14 +2,10 @@ import {
     Slack,
     User,
     Settings,
-    Database,
-    Edit2,
     MoreVertical,
     FileText,
     Trash2,
-    Archive,
-    Eye,
-    Delete
+    Archive
 } from 'react-feather'
 import {Button, DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown} from "reactstrap";
 import {Unit} from "../../../models/Unit";

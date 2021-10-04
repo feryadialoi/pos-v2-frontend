@@ -14,6 +14,10 @@ const ProductStockViewPage = () => {
 
     const [] = useState()
 
+    const getProductStock = () => {
+
+    }
+
     return (
         <Fragment>
             <Card>

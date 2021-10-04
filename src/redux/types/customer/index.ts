@@ -1,0 +1,1 @@
+export const SET_PAGE_OF_CUSTOMER = "SET_PAGE_OF_CUSTOMER"

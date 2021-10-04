@@ -231,7 +231,7 @@ const BrandsList = () => {
                     paginationServer
                     columns={[...columns, {
                         name: "Aksi", cell: (row) => <TableActionButton
-                            hasAuthorityToEdit
+                            hasAuthorityToEdit={false}
                             useEdit
                             onClickEdit={() => {
                                 setIsModalUpdateBrandVisible(true)
@@ -239,7 +239,7 @@ const BrandsList = () => {
                             }}
 
                             useDelete
-                            hasAuthorityToDelete
+                            hasAuthorityToDelete={false}
                             onClickDelete={() => {
                                 showDeleteModal(row.name)
                                 setBrandToDelete(row)

@@ -1,0 +1,1 @@
+export const SET_PAGE_OF_SALESMAN = "SET_PAGE_OF_SALESMAN"

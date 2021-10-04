@@ -22,9 +22,10 @@ import {notifySuccess} from "../../component/SuccessToast";
 
 interface AddSupplierFormProps {
     onSuccess: () => void
+    toggleModal: () => void
 }
 
-const AddSupplierForm = ({onSuccess}: AddSupplierFormProps) => {
+const AddSupplierForm = ({onSuccess, toggleModal}: AddSupplierFormProps) => {
     const SignupSchema = yup.object().shape({
         name: yup.string().required("Nama belum diisi"),
         address: yup.string().required("Alamat belum diisi"),
@@ -254,11 +255,11 @@ const AddSupplierForm = ({onSuccess}: AddSupplierFormProps) => {
                 </ModalBody>
                 <ModalFooter>
                     <FormGroup className="d-flex justify-content-end">
-                        <Button type="submit" color="primary" className="mr-1" onClick={() => {
-                        }}>Simpan</Button>
+                        <Button type="submit" color="primary" className="mr-1">Simpan</Button>
 
                         <Button color="primary" outline onClick={() => {
-                        }}>Reset</Button>
+                            toggleModal()
+                        }}>Batal</Button>
                     </FormGroup>
                 </ModalFooter>
             </Form>

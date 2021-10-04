@@ -45,6 +45,13 @@ const MasterRoutes: AppRoute[] = [
         }
     },
     {
+        path: '/salesmen',
+        component: lazy(() => import('../../views/master/salesman/SalesmanPage')),
+        meta: {
+            authRoute: true
+        }
+    },
+    {
         path: '/customers',
         component: lazy(() => import('../../views/master/customer/CustomerPage')),
         meta: {
